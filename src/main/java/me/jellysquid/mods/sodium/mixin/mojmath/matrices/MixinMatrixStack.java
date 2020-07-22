@@ -1,10 +1,10 @@
 package me.jellysquid.mods.sodium.mixin.mojmath.matrices;
 
-import me.jellysquid.mods.sodium.client.util.math.Matrix3fExtended;
-import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
-import me.jellysquid.mods.sodium.client.util.math.MatrixUtil;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Quaternion;
+import me.jellysquid.mods.sodium.client.util.math.vector.Matrix3fExtended;
+import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
+import me.jellysquid.mods.sodium.client.util.math.vector.MatrixUtil;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.util.math.vector.Quaternion;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;

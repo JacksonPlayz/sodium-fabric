@@ -2,12 +2,12 @@ package me.jellysquid.mods.sodium.mixin.gui;
 
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.hud.DebugHud;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
+import net.minecraft.client.renderer.*;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.util.math.vector.Matrix4f;
 import org.apache.commons.lang3.Validate;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
@@ -24,11 +24,11 @@ import java.util.List;
 public abstract class MixinDebugHud {
     @Shadow
     @Final
-    private MinecraftClient client;
+    private Minecraft client;
 
     @Shadow
     @Final
-    private TextRenderer fontRenderer;
+    private FontRenderer fontRenderer;
 
     private List<String> capturedList = null;
 

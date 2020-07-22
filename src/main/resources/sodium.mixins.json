@@ -3,6 +3,8 @@
   "required": true,
   "compatibilityLevel": "JAVA_8",
   "plugin": "me.jellysquid.mods.sodium.mixin.SodiumMixinPlugin",
+  "refmap": "mixins.sodium.refmap.json",
+  "minVersion": "0.8",
   "injectors": {
     "defaultRequire": 1
   },

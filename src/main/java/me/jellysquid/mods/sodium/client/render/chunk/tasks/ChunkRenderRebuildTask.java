@@ -15,16 +15,16 @@ import me.jellysquid.mods.sodium.client.world.WorldSlice;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.chunk.ChunkOcclusionDataBuilder;
-import net.minecraft.client.util.math.Vector3d;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.renderer.RenderLayer;
+import net.minecraft.client.renderer.RenderLayers;
+import net.minecraft.client.renderer.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.block.entity.BlockEntityRenderer;
+import net.minecraft.client.renderer.chunk.ChunkOcclusionDataBuilder;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.Chunk;
 
 /**
  * Rebuilds all the meshes of a chunk for each given render pass with non-occluded blocks. The result is then uploaded
@@ -109,10 +109,10 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                     }
 
                     if (block.hasBlockEntity()) {
-                        BlockEntity entity = this.slice.getBlockEntity(pos, WorldChunk.CreationType.CHECK);
+                        TileEntity entity = this.slice.getTileEntity(pos, Chunk.CreationType.CHECK);
 
                         if (entity != null) {
-                            BlockEntityRenderer<BlockEntity> renderer = BlockEntityRenderDispatcher.INSTANCE.get(entity);
+                            BlockEntityRenderer<TileEntity> renderer = BlockEntityRenderDispatcher.INSTANCE.get(entity);
 
                             if (renderer != null) {
                                 renderData.addBlockEntity(entity, !renderer.rendersOutsideBoundingBox(entity));

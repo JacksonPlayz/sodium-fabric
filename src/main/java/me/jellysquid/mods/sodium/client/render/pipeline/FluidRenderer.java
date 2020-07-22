@@ -17,25 +17,25 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.StainedGlassBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.color.block.BlockColorProvider;
-import net.minecraft.client.color.world.BiomeColors;
-import net.minecraft.client.render.block.BlockModels;
-import net.minecraft.client.render.model.ModelLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.world.biome.BiomeColors;
+import net.minecraft.client.renderer.block.BlockModels;
+import net.minecraft.client.renderer.model.ModelLoader;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.tag.FluidTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockRenderView;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.world.IBlockDisplayReader;
 
 public class FluidRenderer {
-    private static final BlockColorProvider FLUID_COLOR_PROVIDER = (state, world, pos, tintIndex) -> {
+    private static final IBlockColor FLUID_COLOR_PROVIDER = (state, world, pos, tintIndex) -> {
         if (world == null) return 0xFFFFFFFF;
         return BiomeColors.getWaterColor(world, pos);
     };
@@ -54,8 +54,8 @@ public class FluidRenderer {
     private final QuadLightData quadLightData = new QuadLightData();
     private final int[] quadColors = new int[4];
 
-    public FluidRenderer(MinecraftClient client, LightPipelineProvider lighters, BiomeColorBlender biomeColorBlender) {
-        BlockModels models = client.getBakedModelManager().getBlockModels();
+    public FluidRenderer(Minecraft client, LightPipelineProvider lighters, BiomeColorBlender biomeColorBlender) {
+        BlockModels models = client.getModelManager().getBlockModels();
 
         this.lavaSprites[0] = models.getModel(Blocks.LAVA.getDefaultState()).getSprite();
         this.lavaSprites[1] = ModelLoader.LAVA_FLOW.getSprite();
@@ -75,16 +75,16 @@ public class FluidRenderer {
         this.biomeColorBlender = biomeColorBlender;
     }
 
-    private boolean isFluidExposed(BlockRenderView world, int x, int y, int z, Fluid fluid) {
+    private boolean isFluidExposed(IBlockDisplayReader world, int x, int y, int z, Fluid fluid) {
         BlockPos pos = this.scratchPos.set(x, y, z);
-        return !world.getFluidState(pos).getFluid().matchesType(fluid);
+        return !world.getFluidState(pos).getFluid().isEquivalentTo(fluid);
     }
 
-    private boolean isSideExposed(BlockRenderView world, int x, int y, int z, Direction dir, float height) {
-        BlockPos pos = this.scratchPos.set(x + dir.getOffsetX(), y + dir.getOffsetY(), z + dir.getOffsetZ());
+    private boolean isSideExposed(IBlockDisplayReader world, int x, int y, int z, Direction dir, float height) {
+        BlockPos pos = this.scratchPos.set(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset());
         BlockState blockState = world.getBlockState(pos);
 
-        if (blockState.isOpaque()) {
+        if (blockState.isOpaqueCube(world, pos)) {
             VoxelShape shape = blockState.getCullingShape(world, pos);
 
             // Hoist these checks to avoid allocating the shape below
@@ -95,15 +95,15 @@ public class FluidRenderer {
                 return true;
             }
 
-            VoxelShape threshold = VoxelShapes.cuboid(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
+            VoxelShape threshold = VoxelShapes.create(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
 
-            return !VoxelShapes.isSideCovered(threshold, shape, dir);
+            return !VoxelShapes.isCubeSideCovered(threshold, shape, dir);
         }
 
         return true;
     }
 
-    public boolean render(BlockRenderView world, FluidState fluidState, BlockPos pos, ModelQuadSinkDelegate consumer) {
+    public boolean render(IBlockDisplayReader world, FluidState fluidState, BlockPos pos, ModelQuadSinkDelegate consumer) {
         int posX = pos.getX();
         int posY = pos.getY();
         int posZ = pos.getZ();
@@ -122,7 +122,7 @@ public class FluidRenderer {
             return false;
         }
 
-        boolean lava = fluidState.isIn(FluidTags.LAVA);
+        boolean lava = fluidState.isTagged(FluidTags.LAVA);
         Sprite[] sprites = lava ? this.lavaSprites : this.waterSprites;
 
         boolean rendered = false;
@@ -137,7 +137,7 @@ public class FluidRenderer {
         final ModelQuadViewMutable quad = this.quad;
         final QuadLightData light = this.quadLightData;
 
-        LightMode lightMode = !lava && MinecraftClient.isAmbientOcclusionEnabled() ? LightMode.SMOOTH : LightMode.FLAT;
+        LightMode lightMode = !lava && Minecraft.isAmbientOcclusionEnabled() ? LightMode.SMOOTH : LightMode.FLAT;
         LightPipeline lighter = this.lighters.getLighter(lightMode);
 
         quad.setFlags(0);
@@ -148,7 +148,7 @@ public class FluidRenderer {
             h3 -= 0.001F;
             h4 -= 0.001F;
 
-            Vec3d velocity = fluidState.getVelocity(world, pos);
+            Vector3d velocity = fluidState.getVelocity(world, pos);
 
             Sprite sprite;
             float u1, u2, u3, u4;
@@ -204,7 +204,7 @@ public class FluidRenderer {
             this.calculateQuadColors(quad, world, pos, lighter, Direction.UP, 1.0F, !lava);
             this.flushQuad(consumer, quad, Direction.UP, false);
 
-            if (fluidState.method_15756(world, this.scratchPos.set(posX, posY + 1, posZ))) {
+            if (fluidState.getActualHeight(world, this.scratchPos.set(posX, posY + 1, posZ))) {
                 this.setVertex(quad, 3, 0.0f, 0.0f + h1, 0.0f, u1, v1);
                 this.setVertex(quad, 2, 0.0f, 0.0f + h2, 1.0F, u2, v2);
                 this.setVertex(quad, 1, 1.0F, 0.0f + h3, 1.0F, u3, v3);
@@ -299,9 +299,9 @@ public class FluidRenderer {
             }
 
             if (this.isSideExposed(world, posX, posY, posZ, dir, Math.max(c1, c2))) {
-                int adjX = posX + dir.getOffsetX();
-                int adjY = posY + dir.getOffsetY();
-                int adjZ = posZ + dir.getOffsetZ();
+                int adjX = posX + dir.getXOffset();
+                int adjY = posY + dir.getYOffset();
+                int adjZ = posZ + dir.getZOffset();
 
                 Sprite sprite = sprites[1];
 
@@ -348,7 +348,7 @@ public class FluidRenderer {
         return rendered;
     }
 
-    private void calculateQuadColors(ModelQuadViewMutable quad, BlockRenderView world,  BlockPos pos, LightPipeline lighter, Direction dir, float brightness, boolean colorized) {
+    private void calculateQuadColors(ModelQuadViewMutable quad, IBlockDisplayReader world,  BlockPos pos, LightPipeline lighter, Direction dir, float brightness, boolean colorized) {
         QuadLightData light = this.quadLightData;
         lighter.calculate(quad, pos, light, dir, false);
 
@@ -393,7 +393,7 @@ public class FluidRenderer {
         quad.setTexV(i, v);
     }
 
-    private float getCornerHeight(BlockRenderView world, int x, int y, int z, Fluid fluid) {
+    private float getCornerHeight(IBlockDisplayReader world, int x, int y, int z, Fluid fluid) {
         int samples = 0;
         float totalHeight = 0.0F;
 
@@ -410,8 +410,8 @@ public class FluidRenderer {
             BlockState blockState = world.getBlockState(pos);
             FluidState fluidState = blockState.getFluidState();
 
-            if (fluidState.getFluid().matchesType(fluid)) {
-                float height = fluidState.getHeight(world, pos);
+            if (fluidState.getFluid().isEquivalentTo(fluid)) {
+                float height = fluidState.getHeight();
 
                 if (height >= 0.8F) {
                     totalHeight += height * 10.0F;

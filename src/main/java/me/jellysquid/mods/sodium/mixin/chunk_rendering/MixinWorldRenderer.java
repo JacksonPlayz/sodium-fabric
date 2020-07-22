@@ -2,13 +2,13 @@ package me.jellysquid.mods.sodium.mixin.chunk_rendering;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.options.GameOptions;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.*;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.vector.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -39,7 +39,7 @@ public abstract class MixinWorldRenderer {
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(MinecraftClient client, BufferBuilderStorage bufferBuilders, CallbackInfo ci) {
+    private void init(Minecraft client, BufferBuilderStorage bufferBuilders, CallbackInfo ci) {
         this.renderer = SodiumWorldRenderer.create();
     }
 

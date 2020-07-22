@@ -1,8 +1,8 @@
 package me.jellysquid.mods.sodium.mixin.buffers.fast_sort;
 
 import com.google.common.primitives.Floats;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.VertexFormat;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;

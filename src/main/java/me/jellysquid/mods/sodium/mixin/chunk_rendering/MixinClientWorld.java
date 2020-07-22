@@ -3,7 +3,7 @@ package me.jellysquid.mods.sodium.mixin.chunk_rendering;
 import me.jellysquid.mods.sodium.client.world.ClientWorldExtended;
 import me.jellysquid.mods.sodium.client.world.SodiumChunkManager;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.profiler.Profiler;

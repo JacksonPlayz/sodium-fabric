@@ -1,6 +1,6 @@
 package me.jellysquid.mods.sodium.client.gui.options;
 
-import net.minecraft.util.Formatting;
+import net.minecraft.util.text.TextFormatting;
 
 public enum OptionImpact {
     LOW(Formatting.GREEN, "Low"),

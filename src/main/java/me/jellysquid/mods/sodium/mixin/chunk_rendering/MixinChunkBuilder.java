@@ -1,6 +1,6 @@
 package me.jellysquid.mods.sodium.mixin.chunk_rendering;
 
-import net.minecraft.client.render.chunk.ChunkBuilder;
+import net.minecraft.client.renderer.chunk.ChunkBuilder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;

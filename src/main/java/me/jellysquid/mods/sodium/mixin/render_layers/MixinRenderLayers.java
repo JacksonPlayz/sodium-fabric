@@ -2,8 +2,8 @@ package me.jellysquid.mods.sodium.mixin.render_layers;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.renderer.RenderLayer;
+import net.minecraft.client.renderer.RenderLayers;
 import net.minecraft.fluid.Fluid;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

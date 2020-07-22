@@ -5,7 +5,7 @@ import me.jellysquid.mods.sodium.client.gl.attribute.GlVertexFormat;
 import me.jellysquid.mods.sodium.client.gl.util.MemoryTracker;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildResult;
 import me.jellysquid.mods.sodium.client.render.chunk.lists.ChunkRenderListIterator;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.matrix.MatrixStack;
 
 import java.util.Collections;
 import java.util.Iterator;

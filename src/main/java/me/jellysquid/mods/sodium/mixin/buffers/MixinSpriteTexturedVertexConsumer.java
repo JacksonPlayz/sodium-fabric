@@ -2,8 +2,8 @@ package me.jellysquid.mods.sodium.mixin.buffers;
 
 import me.jellysquid.mods.sodium.client.model.consumer.ParticleVertexConsumer;
 import me.jellysquid.mods.sodium.client.model.consumer.QuadVertexConsumer;
-import net.minecraft.client.render.SpriteTexturedVertexConsumer;
-import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.renderer.SpriteTexturedVertexConsumer;
+import com.mojang.blaze3d.vertex.IVertexConsumer;
 import net.minecraft.client.texture.Sprite;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class MixinSpriteTexturedVertexConsumer implements QuadVertexConsumer, ParticleVertexConsumer {
     @Shadow
     @Final
-    private VertexConsumer parent;
+    private IVertexConsumer parent;
 
     @Shadow
     @Final

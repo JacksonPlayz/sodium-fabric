@@ -1,80 +1,70 @@
-plugins {
-    id 'fabric-loom' version '0.4-SNAPSHOT'
+buildscript {
+    repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        jcenter()
+        mavenCentral()
+        maven { url = 'https://dist.creeper.host/Sponge/maven' }
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
+    }
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+apply plugin: 'org.spongepowered.mixin'
 
-archivesBaseName = "${project.archives_base_name}-mc${project.minecraft_version}"
-version = project.mod_version
-group = project.maven_group
-
-def build_release = System.getenv("BUILD_RELEASE") == "true"
-def build_id = System.getenv("BUILD_ID")
-
-if (!build_release) {
-    version += "-SNAPSHOT"
+mixin {
+    add sourceSets.main, "mixins.sodium.refmap.json"
 }
 
-if (build_id != null) {
-    version += "+build.${build_id}"
+version = '0.1.0'
+group = 'me.jellysquid.mods'
+archivesBaseName = 'sodium-forge-mc1.16.1'
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+repositories {
+    maven {
+        url "https://maven.tterrag.com/"
+    }
 }
 
 minecraft {
-    refmapName = "mixins.sodium.refmap.json"
-    accessWidener = file("src/main/resources/sodium.accesswidener")
-}
-
-dependencies {
-    //to change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
-}
-
-processResources {
-    inputs.property "version", project.version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
-
-        expand "version": project.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
-    }
-}
-
-if (project.use_third_party_mods) {
-    repositories {
-        maven { url = "https://jitpack.io" }
-    }
-
-    dependencies {
-        // DataBreaker applies a number of patches to eliminate the loading of data fixers
-        // This greatly reduces the amount of time needed to start the game, but is generally unsafe in production
-        modRuntime ("com.github.SuperCoder7979:databreaker:${project.databreaker_version}") {
-            transitive = false
+    mappings channel: 'snapshot', version: '20200722-mixed-1.16.1'
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            arg "-mixin.config=sodium.mixins.json"
+            mods {
+                sodium {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
 
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
-
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = "sources"
-    from sourceSets.main.allSource
-}
-
 jar {
-    from "LICENSE.txt"
+    manifest {
+        attributes([
+                "Specification-Title": "Sodium (Forge)",
+                "Specification-Vendor": "Jaackson (By Jellysquid)",
+                "Specification-Version": "1",
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor": "Jaackson (By Jellysquid)",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "MixinConfigs": "sodium.mixins.json"
+        ])
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.1-32.0.75'
 }

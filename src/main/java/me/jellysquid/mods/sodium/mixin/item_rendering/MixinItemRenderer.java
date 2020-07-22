@@ -10,13 +10,13 @@ import me.jellysquid.mods.sodium.client.world.biome.ItemColorsExtended;
 import me.jellysquid.mods.sodium.common.util.DirectionUtil;
 import net.minecraft.client.color.item.ItemColorProvider;
 import net.minecraft.client.color.item.ItemColors;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexConsumer;
+import net.minecraft.client.renderer.item.ItemRenderer;
+import net.minecraft.client.renderer.model.BakedModel;
+import net.minecraft.client.renderer.model.BakedQuad;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.Direction;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -37,7 +37,7 @@ public class MixinItemRenderer {
      * @author JellySquid
      */
     @Overwrite
-    private void renderBakedItemModel(BakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, VertexConsumer vertices) {
+    private void renderBakedItemModel(BakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, IVertexConsumer vertices) {
         XoRoShiRoRandom random = this.random;
 
         for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
@@ -60,7 +60,7 @@ public class MixinItemRenderer {
      * @author JellySquid
      */
     @Overwrite
-    private void renderBakedItemQuads(MatrixStack matrices, VertexConsumer vertices, List<BakedQuad> quads, ItemStack stack, int light, int overlay) {
+    private void renderBakedItemQuads(MatrixStack matrices, IVertexConsumer vertices, List<BakedQuad> quads, ItemStack stack, int light, int overlay) {
         MatrixStack.Entry entry = matrices.peek();
 
         QuadVertexConsumer consumer = (QuadVertexConsumer) vertices;

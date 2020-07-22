@@ -2,18 +2,20 @@ package me.jellysquid.mods.sodium.client;
 
 import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 import me.jellysquid.mods.sodium.client.util.UnsafeUtil;
-import net.fabricmc.api.ClientModInitializer;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
-public class SodiumClientMod implements ClientModInitializer {
+@Mod("sodium")
+@Mod.EventBusSubscriber(modid = "sodium")
+public class SodiumClientMod {
     private static SodiumGameOptions CONFIG;
     private static Logger LOGGER;
 
-    @Override
-    public void onInitializeClient() {
+    private void onInitializeClient(final FMLClientSetupEvent event) {
 
     }
 

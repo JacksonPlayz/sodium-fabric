@@ -9,8 +9,8 @@ import me.jellysquid.mods.sodium.client.util.math.FrustumExtended;
 import me.jellysquid.mods.sodium.common.util.DirectionUtil;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.Direction;
 
 import java.lang.reflect.Array;
 import java.util.concurrent.CompletableFuture;
@@ -208,8 +208,8 @@ public class ChunkRenderContainer<T extends ChunkGraphicsState> {
     /**
      * Returns the chunk section position which this render refers to in the world.
      */
-    public ChunkSectionPos getChunkPos() {
-        return ChunkSectionPos.from(this.chunkX, this.chunkY, this.chunkZ);
+    public ChunkPos getChunkPos() {
+        return ChunkPos.from(this.chunkX, this.chunkY, this.chunkZ);
     }
 
     /**

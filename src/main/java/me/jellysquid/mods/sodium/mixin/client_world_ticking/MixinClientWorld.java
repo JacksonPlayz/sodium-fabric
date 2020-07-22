@@ -8,7 +8,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.Direction;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.MutableWorldProperties;

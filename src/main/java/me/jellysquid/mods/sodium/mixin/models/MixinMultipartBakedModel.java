@@ -1,10 +1,10 @@
 package me.jellysquid.mods.sodium.mixin.models;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.render.model.MultipartBakedModel;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.model.BakedModel;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.MultipartBakedModel;
+import net.minecraft.util.Direction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

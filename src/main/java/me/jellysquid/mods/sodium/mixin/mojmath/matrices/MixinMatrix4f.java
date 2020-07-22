@@ -1,11 +1,11 @@
 package me.jellysquid.mods.sodium.mixin.mojmath.matrices;
 
 import me.jellysquid.mods.sodium.client.util.UnsafeUtil;
-import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
+import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
+import net.minecraft.util.math.vector.vector.Matrix4f;
+import net.minecraft.util.math.vector.vector.Quaternion;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -260,7 +260,7 @@ public class MixinMatrix4f implements Matrix4fExtended {
      * @reason Optimize
      * @author JellySquid
      */
-    @Environment(EnvType.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Overwrite
     public void writeToBuffer(FloatBuffer buf) {
         if (buf.remaining() < 16) {

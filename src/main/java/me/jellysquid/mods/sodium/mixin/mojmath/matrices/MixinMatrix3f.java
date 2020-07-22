@@ -1,11 +1,11 @@
 package me.jellysquid.mods.sodium.mixin.mojmath.matrices;
 
 import me.jellysquid.mods.sodium.client.util.Norm3b;
-import me.jellysquid.mods.sodium.client.util.math.Matrix3fExtended;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Matrix3f;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3i;
+import me.jellysquid.mods.sodium.client.util.math.vector.Matrix3fExtended;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.Matrix3f;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vec3i;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 

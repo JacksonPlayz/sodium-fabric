@@ -5,30 +5,30 @@ import me.jellysquid.mods.sodium.client.model.consumer.ParticleVertexConsumer;
 import me.jellysquid.mods.sodium.client.model.consumer.QuadVertexConsumer;
 import me.jellysquid.mods.sodium.client.util.Norm3b;
 import me.jellysquid.mods.sodium.client.util.color.ColorABGR;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.util.math.Matrix4f;
+import com.mojang.blaze3d.vertex.IVertexConsumer;
+import net.minecraft.util.math.vector.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(VertexConsumer.class)
+@Mixin(IVertexConsumer.class)
 public interface MixinVertexConsumer extends ParticleVertexConsumer, QuadVertexConsumer, GlyphVertexConsumer {
     @Shadow
-    VertexConsumer vertex(double x, double y, double z);
+    IVertexConsumer vertex(double x, double y, double z);
 
     @Shadow
-    VertexConsumer texture(float u, float v);
+    IVertexConsumer texture(float u, float v);
 
     @Shadow
-    VertexConsumer color(int red, int green, int blue, int alpha);
+    IVertexConsumer color(int red, int green, int blue, int alpha);
 
     @Shadow
-    VertexConsumer light(int uv);
+    IVertexConsumer light(int uv);
 
     @Shadow
-    VertexConsumer overlay(int uv);
+    IVertexConsumer overlay(int uv);
 
     @Shadow
-    VertexConsumer normal(float x, float y, float z);
+    IVertexConsumer normal(float x, float y, float z);
 
     @Shadow
     void next();

@@ -17,20 +17,20 @@ import me.jellysquid.mods.sodium.client.render.chunk.backends.gl43.GL43ChunkRend
 import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkRenderData;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPass;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPassManager;
-import me.jellysquid.mods.sodium.client.util.math.FrustumExtended;
+import me.jellysquid.mods.sodium.client.util.math.vector.FrustumExtended;
 import me.jellysquid.mods.sodium.client.world.ChunkStatusListener;
 import me.jellysquid.mods.sodium.client.world.ChunkStatusListenerManager;
 import me.jellysquid.mods.sodium.common.util.ListUtil;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.render.model.ModelLoader;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.model.ModelLoader;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.vector.*;
 import net.minecraft.util.profiler.Profiler;
 
 import java.util.Set;
@@ -42,7 +42,7 @@ import java.util.SortedSet;
 public class SodiumWorldRenderer implements ChunkStatusListener {
     private static SodiumWorldRenderer instance;
 
-    private final MinecraftClient client;
+    private final Minecraft client;
 
     private ClientWorld world;
     private int renderDistance;
@@ -53,7 +53,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
     private boolean useEntityCulling;
 
     private final LongSet loadedChunkPositions = new LongOpenHashSet();
-    private final Set<BlockEntity> globalBlockEntities = new ObjectOpenHashSet<>();
+    private final Set<TileEntity> globalBlockEntities = new ObjectOpenHashSet<>();
 
     private Frustum frustum;
     private ChunkRenderManager<?> chunkRenderManager;
@@ -65,7 +65,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
      */
     public static SodiumWorldRenderer create() {
         if (instance == null) {
-            instance = new SodiumWorldRenderer(MinecraftClient.getInstance());
+            instance = new SodiumWorldRenderer(Minecraft.getInstance());
         }
 
         return instance;
@@ -83,7 +83,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
         return instance;
     }
 
-    private SodiumWorldRenderer(MinecraftClient client) {
+    private SodiumWorldRenderer(Minecraft client) {
         this.client = client;
     }
 
@@ -156,7 +156,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
             throw new IllegalStateException("Client instance has no active player entity");
         }
 
-        Vec3d cameraPos = camera.getPos();
+        Vector3d cameraPos = camera.getPos();
 
         this.chunkRenderManager.setCameraPosition(cameraPos.x, cameraPos.y, cameraPos.z);
 
@@ -275,12 +275,12 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
                                    Camera camera, float tickDelta) {
         VertexConsumerProvider.Immediate immediate = bufferBuilders.getEntityVertexConsumers();
 
-        Vec3d cameraPos = camera.getPos();
+        Vector3d cameraPos = camera.getPos();
         double x = cameraPos.getX();
         double y = cameraPos.getY();
         double z = cameraPos.getZ();
 
-        for (BlockEntity blockEntity : this.chunkRenderManager.getVisibleBlockEntities()) {
+        for (TileEntity blockEntity : this.chunkRenderManager.getVisibleBlockEntities()) {
             BlockPos pos = blockEntity.getPos();
 
             matrices.push();
@@ -294,7 +294,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
 
                 if (stage >= 0) {
                     MatrixStack.Entry entry = matrices.peek();
-                    VertexConsumer transformer = new TransformingVertexConsumer(bufferBuilders.getEffectVertexConsumers().getBuffer(ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.get(stage)), entry.getModel(), entry.getNormal());
+                    IVertexConsumer transformer = new TransformingVertexConsumer(bufferBuilders.getEffectVertexConsumers().getBuffer(ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.get(stage)), entry.getModel(), entry.getNormal());
                     consumer = (layer) -> layer.hasCrumbling() ? VertexConsumers.dual(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
                 }
             }
@@ -304,7 +304,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
             matrices.pop();
         }
 
-        for (BlockEntity blockEntity : this.globalBlockEntities) {
+        for (TileEntity blockEntity : this.globalBlockEntities) {
             BlockPos pos = blockEntity.getPos();
 
             matrices.push();

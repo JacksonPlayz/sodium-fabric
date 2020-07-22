@@ -6,16 +6,16 @@ import me.jellysquid.mods.sodium.client.gui.options.control.ControlElement;
 import me.jellysquid.mods.sodium.client.gui.options.storage.OptionStorage;
 import me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.VideoOptionsScreen;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.StringRenderable;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ public class SodiumOptionsGUI extends Screen {
         int y = 6;
 
         for (OptionPage page : this.pages) {
-            int width = 10 + this.textRenderer.getWidth(page.getName());
+            int width = 10 + this.fontRenderer.getWidth(page.getName());
 
             FlatButtonWidget button = new FlatButtonWidget(new Dim2i(x, y, width, 16), page.getName(), () -> this.setPage(page));
             button.setSelected(this.currentPage == page);
@@ -192,7 +192,7 @@ public class SodiumOptionsGUI extends Screen {
         int boxX = dim.getLimitX() + boxPadding;
 
         Option<?> option = element.getOption();
-        List<StringRenderable> tooltip = this.textRenderer.wrapLines(option.getTooltip(), boxWidth - (textPadding * 2));
+        List<StringRenderable> tooltip = this.fontRenderer.wrapLines(option.getTooltip(), boxWidth - (textPadding * 2));
 
         OptionImpact impact = option.getImpact();
 
@@ -218,7 +218,7 @@ public class SodiumOptionsGUI extends Screen {
                 continue;
             }
 
-            this.textRenderer.draw(matrixStack, str, boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF);
+            this.fontRenderer.draw(matrixStack, str, boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF);
         }
     }
 
@@ -237,7 +237,7 @@ public class SodiumOptionsGUI extends Screen {
             dirtyStorages.add(option.getStorage());
         }));
 
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
 
         if (flags.contains(OptionFlag.REQUIRES_RENDERER_RELOAD)) {
             client.worldRenderer.reload();
@@ -261,7 +261,7 @@ public class SodiumOptionsGUI extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
-            MinecraftClient.getInstance().openScreen(new VideoOptionsScreen(this.prevScreen, MinecraftClient.getInstance().options));
+            Minecraft.getInstance().openScreen(new VideoOptionsScreen(this.prevScreen, Minecraft.getInstance().options));
 
             return true;
         }

@@ -1,6 +1,6 @@
 package me.jellysquid.mods.sodium.client.render.chunk.passes;
 
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderLayer;
 
 // TODO: Move away from using an enum, make this extensible
 public enum BlockRenderPass {

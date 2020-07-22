@@ -11,7 +11,7 @@ import me.jellysquid.mods.sodium.client.gui.options.control.TickBoxControl;
 import me.jellysquid.mods.sodium.client.gui.options.storage.MinecraftOptionsStorage;
 import me.jellysquid.mods.sodium.client.gui.options.storage.SodiumOptionsStorage;
 import me.jellysquid.mods.sodium.client.util.UnsafeUtil;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.options.AttackIndicator;
 import net.minecraft.client.options.GraphicsMode;
@@ -52,10 +52,10 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> {
                             opts.quality.enableClouds = value;
 
-                            if (MinecraftClient.isFabulousGraphicsOrBetter()) {
-                                Framebuffer framebuffer = MinecraftClient.getInstance().worldRenderer.getCloudsFramebuffer();
+                            if (Minecraft.isFabulousGraphicsOrBetter()) {
+                                Framebuffer framebuffer = Minecraft.getInstance().worldRenderer.getCloudsFramebuffer();
                                 if (framebuffer != null) {
-                                    framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+                                    framebuffer.clear(Minecraft.IS_SYSTEM_MAC);
                                 }
                             }
                         }, (opts) -> opts.quality.enableClouds)
@@ -72,7 +72,7 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> {
                             opts.guiScale = value;
 
-                            MinecraftClient client = MinecraftClient.getInstance();
+                            Minecraft client = Minecraft.getInstance();
                             client.onResolutionChanged();
                         }, opts -> opts.guiScale)
                         .build())
@@ -83,7 +83,7 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> {
                             opts.fullscreen = value;
 
-                            MinecraftClient client = MinecraftClient.getInstance();
+                            Minecraft client = Minecraft.getInstance();
                             Window window = client.getWindow();
 
                             if (window != null && window.isFullscreen() != opts.fullscreen) {
@@ -110,7 +110,7 @@ public class SodiumGameOptionPages {
                         .setControl(option -> new SliderControl(option, 5, 260, 5, ControlValueFormatter.fpsLimit()))
                         .setBinding((opts, value) -> {
                             opts.maxFps = value;
-                            MinecraftClient.getInstance().getWindow().setFramerateLimit(value);
+                            Minecraft.getInstance().getWindow().setFramerateLimit(value);
                         }, opts -> opts.maxFps)
                         .build())
                 .build());

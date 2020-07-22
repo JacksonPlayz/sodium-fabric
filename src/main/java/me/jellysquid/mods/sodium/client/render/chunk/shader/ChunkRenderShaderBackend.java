@@ -6,7 +6,7 @@ import me.jellysquid.mods.sodium.client.gl.shader.GlProgram;
 import me.jellysquid.mods.sodium.client.gl.shader.GlShader;
 import me.jellysquid.mods.sodium.client.render.chunk.ChunkGraphicsState;
 import me.jellysquid.mods.sodium.client.render.chunk.ChunkRenderBackend;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.util.Identifier;
 
 import java.util.EnumMap;

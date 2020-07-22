@@ -8,13 +8,13 @@ import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.math.vector.ChunkPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.biome.source.BiomeArray;
+import net.minecraft.world.biome.BiomeContainer;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.EmptyChunk;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 
 import java.util.concurrent.locks.StampedLock;
@@ -35,11 +35,11 @@ import java.util.concurrent.locks.StampedLock;
  */
 public class SodiumChunkManager extends ClientChunkManager implements ChunkStatusListenerManager {
     private final ClientWorld world;
-    private final WorldChunk emptyChunk;
+    private final Chunk emptyChunk;
 
     private final StampedLock lock = new StampedLock();
 
-    private FixedLongHashTable<WorldChunk> chunks;
+    private FixedLongHashTable<Chunk> chunks;
     private ChunkStatusListener listener;
     private int centerX, centerZ;
     private int radius;
@@ -62,8 +62,8 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
     }
 
     @Override
-    public WorldChunk getChunk(int x, int z, ChunkStatus status, boolean create) {
-        WorldChunk chunk = this.getChunkSafe(createChunkKey(x, z));
+    public Chunk getChunk(int x, int z, ChunkStatus status, boolean create) {
+        Chunk chunk = this.getChunkSafe(createChunkKey(x, z));
 
         if (chunk == null) {
             return create ? this.emptyChunk : null;
@@ -72,11 +72,11 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
         return chunk;
     }
 
-    private WorldChunk getChunkSafe(long key) {
+    private Chunk getChunkSafe(long key) {
         long stamp = this.lock.tryOptimisticRead();
 
         // Perform an optimistic read, hoping that the map will not be mutated while doing so
-        WorldChunk chunk = this.chunks.get(key);
+        Chunk chunk = this.chunks.get(key);
 
         // If the collection changed under our feet, the returned value is to be considered invalid
         // This should happen very rarely.
@@ -95,10 +95,10 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
     }
 
     @Override
-    public WorldChunk loadChunkFromPacket(int x, int z, BiomeArray biomes, PacketByteBuf buf, CompoundTag tag, int verticalStripBitmask, boolean complete) {
+    public Chunk loadChunkFromPacket(int x, int z, BiomeContainer biomes, PacketByteBuf buf, CompoundTag tag, int verticalStripBitmask, boolean complete) {
         long key = createChunkKey(x, z);
 
-        WorldChunk chunk = this.chunks.get(key);
+        Chunk chunk = this.chunks.get(key);
 
         // If the chunk does not yet exist, create it now
         if (!complete && chunk != null) {
@@ -109,7 +109,7 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
                 return null;
             }
 
-            chunk = new WorldChunk(this.world, new ChunkPos(x, z), biomes);
+            chunk = new Chunk(this.world, new ChunkPos(x, z), biomes);
             chunk.loadFromPacket(biomes, buf, tag, verticalStripBitmask);
 
             long stamp = this.lock.writeLock();
@@ -137,15 +137,15 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
     public void updateLoadDistance(int loadDistance) {
         this.radius = getChunkMapRadius(loadDistance);
 
-        FixedLongHashTable<WorldChunk> copy = new FixedLongHashTable<>(getChunkMapSize(this.radius), Hash.FAST_LOAD_FACTOR);
+        FixedLongHashTable<Chunk> copy = new FixedLongHashTable<>(getChunkMapSize(this.radius), Hash.FAST_LOAD_FACTOR);
 
         long stamp = this.lock.writeLock();
 
         try {
-            ObjectIterator<Long2ObjectMap.Entry<WorldChunk>> it = this.chunks.iterator();
+            ObjectIterator<Long2ObjectMap.Entry<Chunk>> it = this.chunks.iterator();
 
             while (it.hasNext()) {
-                Long2ObjectMap.Entry<WorldChunk> entry = it.next();
+                Long2ObjectMap.Entry<Chunk> entry = it.next();
 
                 long pos = entry.getLongKey();
                 int x = ChunkPos.getPackedX(pos);
@@ -178,7 +178,7 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
         this.listener = listener;
     }
 
-    private void onChunkLoaded(int x, int z, WorldChunk chunk) {
+    private void onChunkLoaded(int x, int z, Chunk chunk) {
         // [VanillaCopy] Mark the chunk as eligible for block and sky lighting
         LightingProvider lightEngine = this.getLightingProvider();
         lightEngine.setLightEnabled(new ChunkPos(x, z), true);
@@ -187,7 +187,7 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
 
         // [VanillaCopy] Notify the light engine that this chunk's sections have been updated
         for (int y = 0; y < sections.length; ++y) {
-            lightEngine.updateSectionStatus(ChunkSectionPos.from(x, y, z), ChunkSection.isEmpty(sections[y]));
+            lightEngine.updateSectionStatus(ChunkPos.from(x, y, z), ChunkSection.isEmpty(sections[y]));
         }
 
         // Sodium doesn't actually use vanilla's global color cache, but we keep it around for compatibility purposes

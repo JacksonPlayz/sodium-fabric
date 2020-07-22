@@ -5,10 +5,10 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import me.jellysquid.mods.sodium.client.gl.util.BufferSlice;
 import me.jellysquid.mods.sodium.client.model.quad.properties.ModelQuadFacing;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPass;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.render.chunk.ChunkOcclusionData;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.renderer.chunk.ChunkOcclusionData;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.Direction;
 
 import java.util.*;
 
@@ -21,8 +21,8 @@ public class ChunkRenderData {
             .build();
     public static final ChunkRenderData EMPTY = createEmptyData();
 
-    private List<BlockEntity> globalBlockEntities;
-    private List<BlockEntity> blockEntities;
+    private List<TileEntity> globalBlockEntities;
+    private List<TileEntity> blockEntities;
 
     private EnumMap<BlockRenderPass, ChunkMeshData> meshes;
 
@@ -62,7 +62,7 @@ public class ChunkRenderData {
     /**
      * The collection of block entities contained by this rendered chunk.
      */
-    public Collection<BlockEntity> getBlockEntities() {
+    public Collection<TileEntity> getBlockEntities() {
         return this.blockEntities;
     }
 
@@ -70,7 +70,7 @@ public class ChunkRenderData {
      * The collection of block entities contained by this rendered chunk section which are not part of its culling
      * volume. These entities should always be rendered regardless of the render being visible in the frustum.
      */
-    public Collection<BlockEntity> getGlobalBlockEntities() {
+    public Collection<TileEntity> getGlobalBlockEntities() {
         return this.globalBlockEntities;
     }
 
@@ -90,8 +90,8 @@ public class ChunkRenderData {
     }
 
     public static class Builder {
-        private final List<BlockEntity> globalBlockEntities = new ArrayList<>();
-        private final List<BlockEntity> blockEntities = new ArrayList<>();
+        private final List<TileEntity> globalBlockEntities = new ArrayList<>();
+        private final List<TileEntity> blockEntities = new ArrayList<>();
         private final Set<Sprite> animatedSprites = new ObjectOpenHashSet<>();
 
         private final EnumMap<BlockRenderPass, ChunkMeshData> meshes = new EnumMap<>(BlockRenderPass.class);
@@ -133,7 +133,7 @@ public class ChunkRenderData {
          * @param entity The block entity itself
          * @param cull True if the block entity can be culled to this chunk render's volume, otherwise false
          */
-        public void addBlockEntity(BlockEntity entity, boolean cull) {
+        public void addBlockEntity(TileEntity entity, boolean cull) {
             (cull ? this.blockEntities : this.globalBlockEntities).add(entity);
         }
 

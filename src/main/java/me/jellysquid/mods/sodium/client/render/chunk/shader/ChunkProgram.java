@@ -1,7 +1,7 @@
 package me.jellysquid.mods.sodium.client.render.chunk.shader;
 
 import me.jellysquid.mods.sodium.client.gl.shader.GlProgram;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;

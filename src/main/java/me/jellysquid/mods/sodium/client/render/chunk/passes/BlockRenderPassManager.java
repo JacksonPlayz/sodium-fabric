@@ -1,7 +1,7 @@
 package me.jellysquid.mods.sodium.client.render.chunk.passes;
 
 import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderLayer;
 
 /**
  * Maps vanilla render layers to render passes used by Sodium. This provides compatibility with the render layers already

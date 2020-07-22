@@ -1,23 +1,24 @@
 package me.jellysquid.mods.sodium.client.gui.widgets;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
+import com.mojang.blaze3d.vertex.IVertexConsumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.render.*;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.sound.SoundEvents;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.util.SoundEvents;
 import org.lwjgl.opengl.GL11;
 
 import java.util.function.Consumer;
 
 public abstract class AbstractWidget implements Drawable, Element {
-    protected final TextRenderer font;
+    protected final FontRenderer font;
 
     protected AbstractWidget() {
-        this.font = MinecraftClient.getInstance().textRenderer;
+        this.font = Minecraft.getInstance().fontRenderer;
     }
 
     protected void drawString(MatrixStack matrixStack, String str, int x, int y, int color) {
@@ -33,7 +34,7 @@ public abstract class AbstractWidget implements Drawable, Element {
         this.drawQuads(vertices -> addQuad(vertices, x1, y1, x2, y2, a, r, g, b));
     }
 
-    protected void drawQuads(Consumer<VertexConsumer> consumer) {
+    protected void drawQuads(Consumer<IVertexConsumer> consumer) {
         RenderSystem.enableBlend();
         RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
@@ -50,7 +51,7 @@ public abstract class AbstractWidget implements Drawable, Element {
         RenderSystem.disableBlend();
     }
 
-    protected static void addQuad(VertexConsumer consumer, int x1, int y1, int x2, int y2, float a, float r, float g, float b) {
+    protected static void addQuad(IVertexConsumer consumer, int x1, int y1, int x2, int y2, float a, float r, float g, float b) {
         consumer.vertex(x2, y1, 0.0D).color(r, g, b, a).next();
         consumer.vertex(x1, y1, 0.0D).color(r, g, b, a).next();
         consumer.vertex(x1, y2, 0.0D).color(r, g, b, a).next();
@@ -58,7 +59,7 @@ public abstract class AbstractWidget implements Drawable, Element {
     }
 
     protected void playClickSound() {
-        MinecraftClient.getInstance().getSoundManager()
+        Minecraft.getInstance().getSoundManager()
                 .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 

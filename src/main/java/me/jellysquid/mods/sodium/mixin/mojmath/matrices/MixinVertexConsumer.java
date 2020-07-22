@@ -1,29 +1,29 @@
 package me.jellysquid.mods.sodium.mixin.mojmath.matrices;
 
-import me.jellysquid.mods.sodium.client.util.math.Matrix3fExtended;
-import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
-import me.jellysquid.mods.sodium.client.util.math.MatrixUtil;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.util.math.Matrix3f;
-import net.minecraft.util.math.Matrix4f;
+import me.jellysquid.mods.sodium.client.util.math.vector.Matrix3fExtended;
+import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
+import me.jellysquid.mods.sodium.client.util.math.vector.MatrixUtil;
+import com.mojang.blaze3d.vertex.IVertexConsumer;
+import net.minecraft.util.math.vector.Matrix3f;
+import net.minecraft.util.math.vector.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(VertexConsumer.class)
+@Mixin(IVertexConsumer.class)
 public interface MixinVertexConsumer {
     @Shadow
-    VertexConsumer normal(float x, float y, float z);
+    IVertexConsumer normal(float x, float y, float z);
 
     @Shadow
-    VertexConsumer vertex(double x, double y, double z);
+    IVertexConsumer vertex(double x, double y, double z);
 
     /**
      * @reason Avoid allocations
      * @author JellySquid
      */
     @Overwrite
-    default VertexConsumer vertex(Matrix4f matrix, float x, float y, float z) {
+    default IVertexConsumer vertex(Matrix4f matrix, float x, float y, float z) {
         Matrix4fExtended ext = MatrixUtil.getExtendedMatrix(matrix);
         float x2 = ext.transformVecX(x, y, z);
         float y2 = ext.transformVecY(x, y, z);
@@ -37,7 +37,7 @@ public interface MixinVertexConsumer {
      * @author JellySquid
      */
     @Overwrite
-    default VertexConsumer normal(Matrix3f matrix, float x, float y, float z) {
+    default IVertexConsumer normal(Matrix3f matrix, float x, float y, float z) {
         Matrix3fExtended ext = MatrixUtil.getExtendedMatrix(matrix);
         float x2 = ext.transformVecX(x, y, z);
         float y2 = ext.transformVecY(x, y, z);

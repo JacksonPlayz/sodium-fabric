@@ -9,9 +9,9 @@ import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkMeshData;
 import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkRenderData;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPass;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPassManager;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderLayer;
 import net.minecraft.client.util.GlAllocationUtils;
-import net.minecraft.client.util.math.Vector3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.BlockPos;
 
 import java.nio.ByteBuffer;
