@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import me.jellysquid.mods.sodium.client.gl.util.BufferSlice;
 import me.jellysquid.mods.sodium.client.model.quad.properties.ModelQuadFacing;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPass;
+import net.minecraft.client.renderer.chunk.SetVisibility;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.client.renderer.chunk.ChunkOcclusionData;
-import net.minecraft.client.texture.Sprite;
 import net.minecraft.util.Direction;
 
 import java.util.*;
@@ -26,10 +26,10 @@ public class ChunkRenderData {
 
     private EnumMap<BlockRenderPass, ChunkMeshData> meshes;
 
-    private ChunkOcclusionData occlusionData;
+    private SetVisibility occlusionData;
     private ChunkRenderBounds bounds;
 
-    private List<Sprite> animatedSprites;
+    private List<TextureAtlasSprite> animatedSprites;
 
     private boolean isEmpty;
     private int meshByteSize;
@@ -55,7 +55,7 @@ public class ChunkRenderData {
         return this.occlusionData != null && this.occlusionData.isVisibleThrough(from, to);
     }
 
-    public List<Sprite> getAnimatedSprites() {
+    public List<TextureAtlasSprite> getAnimatedSprites() {
         return this.animatedSprites;
     }
 
@@ -92,11 +92,11 @@ public class ChunkRenderData {
     public static class Builder {
         private final List<TileEntity> globalBlockEntities = new ArrayList<>();
         private final List<TileEntity> blockEntities = new ArrayList<>();
-        private final Set<Sprite> animatedSprites = new ObjectOpenHashSet<>();
+        private final Set<TextureAtlasSprite> animatedSprites = new ObjectOpenHashSet<>();
 
         private final EnumMap<BlockRenderPass, ChunkMeshData> meshes = new EnumMap<>(BlockRenderPass.class);
 
-        private ChunkOcclusionData occlusionData;
+        private SetVisibility occlusionData;
         private ChunkRenderBounds bounds;
 
         public Builder() {
@@ -109,7 +109,7 @@ public class ChunkRenderData {
             this.bounds = bounds;
         }
 
-        public void setOcclusionData(ChunkOcclusionData data) {
+        public void setOcclusionData(SetVisibility data) {
             this.occlusionData = data;
         }
 
@@ -118,7 +118,7 @@ public class ChunkRenderData {
          * before rendering as necessary.
          * @param sprite The sprite
          */
-        public void addSprite(Sprite sprite) {
+        public void addSprite(TextureAtlasSprite sprite) {
             if (sprite.isAnimated()) {
                 this.animatedSprites.add(sprite);
             }
@@ -166,7 +166,7 @@ public class ChunkRenderData {
     }
 
     private static ChunkRenderData createEmptyData() {
-        ChunkOcclusionData occlusionData = new ChunkOcclusionData();
+        SetVisibility occlusionData = new SetVisibility();
         occlusionData.addOpenEdgeFaces(EnumSet.allOf(Direction.class));
 
         ChunkRenderData.Builder meshInfo = new ChunkRenderData.Builder();

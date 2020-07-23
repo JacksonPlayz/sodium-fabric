@@ -13,12 +13,12 @@ public class EntityLighter {
     private static final double MAX_LIGHTMAP_COORD = 240.0D;
 
     public static int getBlendedLight(Entity entity, float tickDelta) {
-        boolean calcBlockLight = !entity.isBurning();
+        boolean calcBlockLight = !entity.isOnFire();
 
         // Find the interpolated position of the entity
-        double x1 = MathHelper.lerp(tickDelta, entity.prevPosX, entity.getX());
-        double y1 = MathHelper.lerp(tickDelta, entity.prevPosY, entity.getY());
-        double z1 = MathHelper.lerp(tickDelta, entity.prevPosZ, entity.getZ());
+        double x1 = MathHelper.lerp(tickDelta, entity.prevX, entity.getX());
+        double y1 = MathHelper.lerp(tickDelta, entity.prevY, entity.getY());
+        double z1 = MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ());
 
         // Bounding boxes with no volume cause issues, ensure they're non-zero
         // Notably, armor stands in "Marker" mode decide this is a cute thing to do
@@ -62,7 +62,7 @@ public class EntityLighter {
                     BlockState blockState = entity.world.getBlockState(pos);
 
                     // Do not consider light-blocking volumes
-                    if (blockState.isOpaqueCube(entity.world, pos) && blockState.getLightValue() <= 0) {
+                    if (blockState.isOpaqueFullCube(entity.world, pos) && blockState.getLightValue(entity.world, pos) <= 0) {
                         continue;
                     }
 

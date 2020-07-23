@@ -1,7 +1,7 @@
 package me.jellysquid.mods.sodium.mixin.mojmath;
 
-import me.jellysquid.mods.sodium.client.util.math.vector.FrustumExtended;
-import net.minecraft.client.renderer.Frustum;
+import me.jellysquid.mods.sodium.client.util.math.FrustumExtended;
+import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraft.util.math.vector.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(Frustum.class)
+@Mixin(ClippingHelper.class)
 public class MixinFrustum implements FrustumExtended {
     private float xF, yF, zF;
 

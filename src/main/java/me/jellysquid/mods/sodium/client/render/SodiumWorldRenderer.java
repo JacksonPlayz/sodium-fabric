@@ -1,6 +1,10 @@
 package me.jellysquid.mods.sodium.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.IVertexConsumer;
+import com.mojang.blaze3d.vertex.MatrixApplyingVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexBuilderUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -17,21 +21,27 @@ import me.jellysquid.mods.sodium.client.render.chunk.backends.gl43.GL43ChunkRend
 import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkRenderData;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPass;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPassManager;
-import me.jellysquid.mods.sodium.client.util.math.vector.FrustumExtended;
+import me.jellysquid.mods.sodium.client.util.math.FrustumExtended;
 import me.jellysquid.mods.sodium.client.world.ChunkStatusListener;
 import me.jellysquid.mods.sodium.client.world.ChunkStatusListenerManager;
 import me.jellysquid.mods.sodium.common.util.ListUtil;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.renderer.culling.ClippingHelper;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.profiler.IProfiler;
+import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.model.ModelLoader;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.*;
-import net.minecraft.util.profiler.Profiler;
 
 import java.util.Set;
 import java.util.SortedSet;
@@ -47,15 +57,15 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
     private ClientWorld world;
     private int renderDistance;
 
-    private double lastCameraX, lastCameraY, lastCameraZ;
-    private double lastCameraPitch, lastCameraYaw;
+    private double lastActiveRenderInfoX, lastActiveRenderInfoY, lastActiveRenderInfoZ;
+    private double lastActiveRenderInfoPitch, lastActiveRenderInfoYaw;
 
     private boolean useEntityCulling;
 
     private final LongSet loadedChunkPositions = new LongOpenHashSet();
     private final Set<TileEntity> globalBlockEntities = new ObjectOpenHashSet<>();
 
-    private Frustum frustum;
+    private ClippingHelper frustum;
     private ChunkRenderManager<?> chunkRenderManager;
     private BlockRenderPassManager renderPassManager;
     private ChunkRenderBackend<?> chunkRenderBackend;
@@ -138,7 +148,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
     /**
      * Called prior to any chunk rendering in order to update necessary state.
      */
-    public void updateChunks(Camera camera, Frustum frustum, boolean hasForcedFrustum, int frame, boolean spectator) {
+    public void updateChunks(ActiveRenderInfo camera, ClippingHelper frustum, boolean hasForcedViewFrustum, int frame, boolean spectator) {
         this.frustum = frustum;
 
         this.useEntityCulling = SodiumClientMod.options().advanced.useAdvancedEntityCulling;
@@ -147,7 +157,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
             this.reload();
         }
 
-        Profiler profiler = this.client.getProfiler();
+        IProfiler profiler = this.client.getProfiler();
         profiler.push("camera_setup");
 
         ClientPlayerEntity player = this.client.player;
@@ -158,29 +168,29 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
 
         Vector3d cameraPos = camera.getPos();
 
-        this.chunkRenderManager.setCameraPosition(cameraPos.x, cameraPos.y, cameraPos.z);
+        this.chunkRenderManager.setActiveRenderInfoPosition(cameraPos.x, cameraPos.y, cameraPos.z);
 
         float pitch = camera.getPitch();
         float yaw = camera.getYaw();
 
-        boolean dirty = cameraPos.x != this.lastCameraX || cameraPos.y != this.lastCameraY || cameraPos.z != this.lastCameraZ ||
-                pitch != this.lastCameraPitch || yaw != this.lastCameraYaw;
+        boolean dirty = cameraPos.x != this.lastActiveRenderInfoX || cameraPos.y != this.lastActiveRenderInfoY || cameraPos.z != this.lastActiveRenderInfoZ ||
+                pitch != this.lastActiveRenderInfoPitch || yaw != this.lastActiveRenderInfoYaw;
 
         if (dirty) {
             this.chunkRenderManager.markDirty();
         }
 
-        this.lastCameraX = cameraPos.x;
-        this.lastCameraY = cameraPos.y;
-        this.lastCameraZ = cameraPos.z;
-        this.lastCameraPitch = pitch;
-        this.lastCameraYaw = yaw;
+        this.lastActiveRenderInfoX = cameraPos.x;
+        this.lastActiveRenderInfoY = cameraPos.y;
+        this.lastActiveRenderInfoZ = cameraPos.z;
+        this.lastActiveRenderInfoPitch = pitch;
+        this.lastActiveRenderInfoYaw = yaw;
 
         profiler.swap("chunk_update");
 
         this.chunkRenderManager.updateChunks();
 
-        if (!hasForcedFrustum && this.chunkRenderManager.isDirty()) {
+        if (!hasForcedViewFrustum && this.chunkRenderManager.isDirty()) {
             profiler.swap("chunk_graph_rebuild");
 
             this.chunkRenderManager.updateGraph(camera, (FrustumExtended) frustum, frame, spectator);
@@ -196,13 +206,13 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
     }
 
     /**
-     * Performs a render pass for the given {@link RenderLayer} and draws all visible chunks for it.
+     * Performs a render pass for the given {@link RenderType} and draws all visible chunks for it.
      */
-    public void drawChunkLayer(RenderLayer renderLayer, MatrixStack matrixStack, double x, double y, double z) {
-        BlockRenderPass pass = this.renderPassManager.getRenderPassForLayer(renderLayer);
+    public void drawChunkLayer(RenderType RenderType, MatrixStack matrixStack, double x, double y, double z) {
+        BlockRenderPass pass = this.renderPassManager.getRenderPassForLayer(RenderType);
         pass.startDrawing();
 
-        this.chunkRenderManager.renderLayer(matrixStack, pass, x, y, z);
+        this.chunkRenderManager.RenderType(matrixStack, pass, x, y, z);
 
         pass.endDrawing();
 
@@ -271,9 +281,9 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
         }
     }
 
-    public void renderTileEntities(MatrixStack matrices, BufferBuilderStorage bufferBuilders, Long2ObjectMap<SortedSet<BlockBreakingInfo>> blockBreakingProgressions,
-                                   Camera camera, float tickDelta) {
-        VertexConsumerProvider.Immediate immediate = bufferBuilders.getEntityVertexConsumers();
+    public void renderTileEntities(MatrixStack matrices, RenderTypeBuffers bufferBuilders, Long2ObjectMap<SortedSet<DestroyBlockProgress>> blockBreakingProgressions,
+                                   ActiveRenderInfo camera, float tickDelta) {
+        IRenderTypeBuffer.Impl immediate = bufferBuilders.getEntityVertexConsumers();
 
         Vector3d cameraPos = camera.getPos();
         double x = cameraPos.getX();
@@ -286,20 +296,20 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
             matrices.push();
             matrices.translate((double) pos.getX() - x, (double) pos.getY() - y, (double) pos.getZ() - z);
 
-            VertexConsumerProvider consumer = immediate;
-            SortedSet<BlockBreakingInfo> breakingInfos = blockBreakingProgressions.get(pos.asLong());
+            IRenderTypeBuffer consumer = immediate;
+            SortedSet<DestroyBlockProgress> breakingInfos = blockBreakingProgressions.get(pos.asLong());
 
             if (breakingInfos != null && !breakingInfos.isEmpty()) {
                 int stage = breakingInfos.last().getStage();
 
                 if (stage >= 0) {
                     MatrixStack.Entry entry = matrices.peek();
-                    IVertexConsumer transformer = new TransformingVertexConsumer(bufferBuilders.getEffectVertexConsumers().getBuffer(ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.get(stage)), entry.getModel(), entry.getNormal());
-                    consumer = (layer) -> layer.hasCrumbling() ? VertexConsumers.dual(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
+                    IVertexBuilder transformer = new MatrixApplyingVertexBuilder(bufferBuilders.getEffectVertexConsumers().getBuffer(ModelBakery.BLOCK_DESTRUCTION_RENDER_LAYERS.get(stage)), entry.getModel(), entry.getNormal());
+                    consumer = (layer) -> layer.hasCrumbling() ? VertexBuilderUtils.dual(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
                 }
             }
 
-            BlockEntityRenderDispatcher.INSTANCE.render(blockEntity, tickDelta, matrices, consumer);
+            TileEntityRendererDispatcher.INSTANCE.render(blockEntity, tickDelta, matrices, consumer);
 
             matrices.pop();
         }
@@ -310,7 +320,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
             matrices.push();
             matrices.translate((double) pos.getX() - x, (double) pos.getY() - y, (double) pos.getZ() - z);
 
-            BlockEntityRenderDispatcher.INSTANCE.render(blockEntity, tickDelta, matrices, immediate);
+            TileEntityRendererDispatcher.INSTANCE.render(blockEntity, tickDelta, matrices, immediate);
 
             matrices.pop();
         }
@@ -341,7 +351,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
             return true;
         }
 
-        Box box = entity.getVisibilityBoundingBox();
+        AxisAlignedBB box = entity.getVisibilityBoundingBox();
 
         // Entities outside the valid world height will never map to a rendered chunk
         // Always render these entities or they'll be culled incorrectly!
@@ -373,7 +383,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
     /**
      * @return The frustum of the current player's camera used to cull chunks
      */
-    public Frustum getFrustum() {
+    public ClippingHelper getViewFrustum() {
         return this.frustum;
     }
 

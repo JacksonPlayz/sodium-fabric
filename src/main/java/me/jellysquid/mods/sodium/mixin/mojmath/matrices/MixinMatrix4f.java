@@ -1,9 +1,9 @@
 package me.jellysquid.mods.sodium.mixin.mojmath.matrices;
 
 import me.jellysquid.mods.sodium.client.util.UnsafeUtil;
-import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
-import net.minecraft.util.math.vector.vector.Matrix4f;
-import net.minecraft.util.math.vector.vector.Quaternion;
+import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.system.MemoryUtil;

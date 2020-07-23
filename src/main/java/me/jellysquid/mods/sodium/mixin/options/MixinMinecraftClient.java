@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(Minecraft.class)
-public class MixinMinecraft {
+public class MixinMinecraftClient {
     /**
      * @author JellySquid
      * @reason Make ambient occlusion user configurable

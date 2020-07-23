@@ -2,10 +2,11 @@ package me.jellysquid.mods.sodium.mixin.chunk_rendering;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.renderer.*;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -24,22 +25,22 @@ import java.util.SortedSet;
 public abstract class MixinWorldRenderer {
     @Shadow
     @Final
-    private BufferBuilderStorage bufferBuilders;
+    private RenderTypeBuffers bufferBuilders;
 
     @Shadow
     @Final
-    private Long2ObjectMap<SortedSet<BlockBreakingInfo>> blockBreakingProgressions;
+    private Long2ObjectMap<SortedSet<DestroyBlockProgress>> blockBreakingProgressions;
 
     private SodiumWorldRenderer renderer;
 
     @Redirect(method = "reload", at = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;viewDistance:I", ordinal = 1))
-    private int nullifyBuiltChunkStorage(GameOptions options) {
+    private int nullifyBuiltChunkStorage(GameSettings options) {
         // Do not allow any resources to be allocated
         return 0;
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(Minecraft client, BufferBuilderStorage bufferBuilders, CallbackInfo ci) {
+    private void init(Minecraft client, DestroyBlockProgress bufferBuilders, CallbackInfo ci) {
         this.renderer = SodiumWorldRenderer.create();
     }
 
@@ -75,9 +76,9 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect the chunk layer render passes to our renderer
      * @author JellySquid
      */
-    @Overwrite
-    private void renderLayer(RenderLayer renderLayer, MatrixStack matrixStack, double d, double e, double f) {
-        this.renderer.drawChunkLayer(renderLayer, matrixStack, d, e, f);
+    @Overwrite(remap=false)
+    private void RenderType(RenderType RenderType, MatrixStack matrixStack, double d, double e, double f) {
+        this.renderer.drawChunkLayer(RenderType, matrixStack, d, e, f);
     }
 
     /**
@@ -85,8 +86,8 @@ public abstract class MixinWorldRenderer {
      * @author JellySquid
      */
     @Overwrite
-    private void setupTerrain(Camera camera, Frustum frustum, boolean hasForcedFrustum, int frame, boolean spectator) {
-        this.renderer.updateChunks(camera, frustum, hasForcedFrustum, frame, spectator);
+    private void setupTerrain(ActiveRenderInfo camera, ClippingHelper frustum, boolean hasForcedViewFrustum, int frame, boolean spectator) {
+        this.renderer.updateChunks(camera, frustum, hasForcedViewFrustum, frame, spectator);
     }
 
     /**
@@ -131,7 +132,7 @@ public abstract class MixinWorldRenderer {
     }
 
     @Inject(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/WorldRenderer;noCullingBlockEntities:Ljava/util/Set;", shift = At.Shift.BEFORE, ordinal = 0))
-    private void onRenderTileEntities(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
+    private void onRenderTileEntities(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, ActiveRenderInfo camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
         this.renderer.renderTileEntities(matrices, this.bufferBuilders, this.blockBreakingProgressions, camera, tickDelta);
     }
 

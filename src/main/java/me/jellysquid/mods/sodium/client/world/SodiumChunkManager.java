@@ -4,23 +4,20 @@ import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import me.jellysquid.mods.sodium.client.util.collections.FixedLongHashTable;
-import net.minecraft.client.world.ClientChunkManager;
+import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.vector.ChunkPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.biome.BiomeContainer;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.EmptyChunk;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.light.LightingProvider;
+import net.minecraft.world.chunk.*;
+import net.minecraft.world.lighting.WorldLightManager;
 
 import java.util.concurrent.locks.StampedLock;
 
 /**
- * An implementation of {@link net.minecraft.world.chunk.ChunkManager} for the client world which uses a simple
+ * An implementation of {@link net.minecraft.world.server.ChunkManager} for the client world which uses a simple
  * integer key to object hash table. This generally provides improved performance over the vanilla implementation
  * through reducing code complexity, eliminating expensive floor-modulo operations, and removing the usage of atomic
  * references.
@@ -33,7 +30,7 @@ import java.util.concurrent.locks.StampedLock;
  * notifications when chunks are loaded or unloaded instead of resorting to expensive polling techniques, which would
  * usually resort in chunk queries being slammed every frame when many chunks have pending rebuilds.
  */
-public class SodiumChunkManager extends ClientChunkManager implements ChunkStatusListenerManager {
+public class SodiumChunkManager extends ClientChunkProvider implements ChunkStatusListenerManager {
     private final ClientWorld world;
     private final Chunk emptyChunk;
 
@@ -95,7 +92,7 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
     }
 
     @Override
-    public Chunk loadChunkFromPacket(int x, int z, BiomeContainer biomes, PacketByteBuf buf, CompoundTag tag, int verticalStripBitmask, boolean complete) {
+    public Chunk loadChunkFromPacket(int x, int z, BiomeContainer biomes, PacketBuffer buf, CompoundNBT tag, int verticalStripBitmask, boolean complete) {
         long key = createChunkKey(x, z);
 
         Chunk chunk = this.chunks.get(key);
@@ -180,14 +177,14 @@ public class SodiumChunkManager extends ClientChunkManager implements ChunkStatu
 
     private void onChunkLoaded(int x, int z, Chunk chunk) {
         // [VanillaCopy] Mark the chunk as eligible for block and sky lighting
-        LightingProvider lightEngine = this.getLightingProvider();
+        WorldLightManager lightEngine = this.getLightingProvider();
         lightEngine.setLightEnabled(new ChunkPos(x, z), true);
 
         ChunkSection[] sections = chunk.getSectionArray();
 
         // [VanillaCopy] Notify the light engine that this chunk's sections have been updated
         for (int y = 0; y < sections.length; ++y) {
-            lightEngine.updateSectionStatus(ChunkPos.from(x, y, z), ChunkSection.isEmpty(sections[y]));
+            lightEngine.updateSectionStatus(SectionPos.from(x, y, z), ChunkSection.isEmpty(sections[y]));
         }
 
         // Sodium doesn't actually use vanilla's global color cache, but we keep it around for compatibility purposes

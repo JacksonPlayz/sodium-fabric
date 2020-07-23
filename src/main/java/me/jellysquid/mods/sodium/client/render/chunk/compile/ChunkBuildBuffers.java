@@ -9,8 +9,8 @@ import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkMeshData;
 import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkRenderData;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPass;
 import me.jellysquid.mods.sodium.client.render.chunk.passes.BlockRenderPassManager;
-import net.minecraft.client.renderer.RenderLayer;
-import net.minecraft.client.util.GlAllocationUtils;
+import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.BlockPos;
 
@@ -40,7 +40,7 @@ public class ChunkBuildBuffers {
         this.delegates = new ChunkBuildBufferDelegate[BlockRenderPass.COUNT];
         this.buildersByLayer = new ChunkMeshBuilder[BlockRenderPass.COUNT][ModelQuadFacing.COUNT];
 
-        for (RenderLayer layer : RenderLayer.getBlockLayers()) {
+        for (RenderType layer : RenderType.getBlockLayers()) {
             int passId = this.renderPassManager.getRenderPassId(layer);
 
             for (ModelQuadFacing facing : ModelQuadFacing.VALUES) {
@@ -57,10 +57,10 @@ public class ChunkBuildBuffers {
     }
 
     /**
-     * Return the {@link ChunkMeshBuilder} for the given {@link RenderLayer} as mapped by the
+     * Return the {@link ChunkMeshBuilder} for the given {@link RenderType} as mapped by the
      * {@link BlockRenderPassManager} for this render context.
      */
-    public ChunkBuildBufferDelegate get(RenderLayer layer) {
+    public ChunkBuildBufferDelegate get(RenderType layer) {
         return this.delegates[this.renderPassManager.getRenderPassId(layer)];
     }
 
@@ -107,7 +107,7 @@ public class ChunkBuildBuffers {
             return null;
         }
 
-        ByteBuffer buffer = GlAllocationUtils.allocateByteBuffer(bufferLen);
+        ByteBuffer buffer = GLAllocation.allocateByteBuffer(bufferLen);
 
         for (Map.Entry<ModelQuadFacing, BufferSlice> entry : meshData.getSlices()) {
             BufferSlice slice = entry.getValue();

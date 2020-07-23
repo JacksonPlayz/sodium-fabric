@@ -5,31 +5,31 @@ import me.jellysquid.mods.sodium.client.model.ModelCuboidAccessor;
 import me.jellysquid.mods.sodium.client.model.consumer.QuadVertexConsumer;
 import me.jellysquid.mods.sodium.client.util.Norm3b;
 import me.jellysquid.mods.sodium.client.util.color.ColorABGR;
-import me.jellysquid.mods.sodium.client.util.math.vector.Matrix3fExtended;
-import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
-import me.jellysquid.mods.sodium.client.util.math.vector.MatrixUtil;
-import net.minecraft.client.model.ModelPart;
+import me.jellysquid.mods.sodium.client.util.math.Matrix3fExtended;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
+import me.jellysquid.mods.sodium.client.util.math.MatrixUtil;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.util.math.vector.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ModelPart.class)
+@Mixin(ModelRenderer.class)
 public class MixinModelPart {
     private static final float NORM = 1.0F / 16.0F;
 
     @Shadow
     @Final
-    private ObjectList<ModelPart.Cuboid> cuboids;
+    private ObjectList<ModelRenderer.ModelBox> cuboids;
 
     /**
      * @author JellySquid
      * @reason Use optimized vertex writer, avoid allocations, use quick matrix transformations
      */
-    @Overwrite
+    @Overwrite(remap=false)
     private void renderCuboids(MatrixStack.Entry matrices, IVertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
         Matrix3fExtended normalExt = MatrixUtil.getExtendedMatrix(matrices.getNormal());
         Matrix4fExtended modelExt = MatrixUtil.getExtendedMatrix(matrices.getModel());
@@ -38,15 +38,15 @@ public class MixinModelPart {
 
         int color = ColorABGR.pack(red, green, blue, alpha);
 
-        for (ModelPart.Cuboid cuboid : this.cuboids) {
-            for (ModelPart.Quad quad : ((ModelCuboidAccessor) cuboid).getQuads()) {
+        for (ModelRenderer.ModelBox cuboid : this.cuboids) {
+            for (ModelRenderer.TexturedQuad quad : ((ModelCuboidAccessor) cuboid).getQuads()) {
                 float normX = normalExt.transformVecX(quad.direction);
                 float normY = normalExt.transformVecY(quad.direction);
                 float normZ = normalExt.transformVecZ(quad.direction);
 
                 int norm = Norm3b.pack(normX, normY, normZ);
 
-                for (ModelPart.Vertex vertex : quad.vertices) {
+                for (ModelRenderer.PositionTextureVertex vertex : quad.vertices) {
                     Vector3f pos = vertex.pos;
 
                     float x1 = pos.getX() * NORM;

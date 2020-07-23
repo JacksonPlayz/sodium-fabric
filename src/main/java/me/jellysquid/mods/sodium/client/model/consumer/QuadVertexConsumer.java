@@ -1,8 +1,8 @@
 package me.jellysquid.mods.sodium.client.model.consumer;
 
-import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
-import me.jellysquid.mods.sodium.client.util.math.vector.MatrixUtil;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
+import me.jellysquid.mods.sodium.client.util.math.MatrixUtil;
 
 public interface QuadVertexConsumer {
     /**

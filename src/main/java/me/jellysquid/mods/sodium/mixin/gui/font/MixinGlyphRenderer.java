@@ -2,15 +2,15 @@ package me.jellysquid.mods.sodium.mixin.gui.font;
 
 import me.jellysquid.mods.sodium.client.model.consumer.GlyphVertexConsumer;
 import me.jellysquid.mods.sodium.client.util.color.ColorABGR;
-import net.minecraft.client.font.GlyphRenderer;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.math.vector.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(GlyphRenderer.class)
+@Mixin(FontRenderer.class)
 public class MixinGlyphRenderer {
     @Shadow
     @Final
@@ -48,7 +48,7 @@ public class MixinGlyphRenderer {
      * @reason Use intrinsics
      * @author JellySquid
      */
-    @Overwrite
+    @Overwrite(remap=false)
     public void draw(boolean italic, float x, float y, Matrix4f matrix, IVertexConsumer vertexConsumer, float red, float green, float blue, float alpha, int light) {
         float x1 = x + this.xMin;
         float x2 = x + this.xMax;

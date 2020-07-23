@@ -2,8 +2,8 @@ package me.jellysquid.mods.sodium.client.gui.options.control;
 
 import me.jellysquid.mods.sodium.client.gui.options.Option;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
-import net.minecraft.client.util.Rect2i;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.Validate;
 
@@ -45,7 +45,7 @@ public class SliderControl implements Control<Integer> {
     private static class Button extends ControlElement<Integer> {
         private static final int THUMB_WIDTH = 2, TRACK_HEIGHT = 1;
 
-        private final Rect2i sliderBounds;
+        private final Rectangle2d sliderBounds;
         private final ControlValueFormatter formatter;
 
         private final int min;
@@ -63,7 +63,7 @@ public class SliderControl implements Control<Integer> {
             this.thumbPosition = this.getThumbPositionForValue(option.getValue());
             this.formatter = formatter;
 
-            this.sliderBounds = new Rect2i(dim.getLimitX() - 96, dim.getCenterY() - 5, 90, 10);
+            this.sliderBounds = new Rectangle2d(dim.getLimitX() - 96, dim.getCenterY() - 5, 90, 10);
         }
 
         @Override

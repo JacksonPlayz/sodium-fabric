@@ -1,16 +1,19 @@
 package me.jellysquid.mods.sodium.mixin.particles;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
+import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.client.particle.ParticleTextureSheet;
-import net.minecraft.client.renderer.Camera;
-import net.minecraft.client.renderer.Frustum;
-import net.minecraft.client.renderer.LightmapTextureManager;
-import com.mojang.blaze3d.vertex.IVertexConsumerProvider;
+import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.ViewFrustum;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.util.math.vector.Box;
+import net.minecraft.client.renderer.culling.ClippingHelper;
+import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.util.math.AxisAlignedBB;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,28 +30,28 @@ import java.util.Queue;
 public class MixinParticleManager {
     @Shadow
     @Final
-    private Map<ParticleTextureSheet, Queue<Particle>> particles;
+    private Map<AtlasTexture, Queue<Particle>> particles;
 
     private final Queue<Particle> cachedQueue = new ArrayDeque<>();
 
-    private Frustum cullingFrustum;
+    private ClippingHelper cullingViewFrustum;
 
     @Inject(method = "renderParticles", at = @At("HEAD"))
-    private void preRenderParticles(MatrixStack matrixStack, VertexConsumerProvider.Immediate immediate, LightmapTextureManager lightmapTextureManager, Camera camera, float f, CallbackInfo ci) {
-        Frustum frustum = SodiumWorldRenderer.getInstance().getFrustum();
+    private void preRenderParticles(MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f, CallbackInfo ci) {
+        ClippingHelper frustum = SodiumWorldRenderer.getInstance().getViewFrustum();
         boolean useCulling = SodiumClientMod.options().advanced.useParticleCulling;
 
         // Setup the frustum state before rendering particles
         if (useCulling && frustum != null) {
-            this.cullingFrustum = frustum;
+            this.cullingViewFrustum = frustum;
         } else {
-            this.cullingFrustum = null;
+            this.cullingViewFrustum = null;
         }
     }
 
     @SuppressWarnings({ "SuspiciousMethodCalls", "unchecked" })
     @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private <V> V filterParticleList(Map<ParticleTextureSheet, Queue<Particle>> map, Object key, MatrixStack matrixStack, VertexConsumerProvider.Immediate immediate, LightmapTextureManager lightmapTextureManager, Camera camera, float f) {
+    private <V> V filterParticleList(Map<IParticleRenderType, Queue<Particle>> map, Object key, MatrixStack matrixStack,  IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f) {
         Queue<Particle> queue = this.particles.get(key);
 
         if (queue == null || queue.isEmpty()) {
@@ -56,7 +59,7 @@ public class MixinParticleManager {
         }
 
         // If the frustum isn't available (whether disabled or some other issue arose), simply return the queue as-is
-        if (this.cullingFrustum == null) {
+        if (this.cullingViewFrustum == null) {
             return (V) queue;
         }
 
@@ -65,10 +68,10 @@ public class MixinParticleManager {
         filtered.clear();
 
         for (Particle particle : queue) {
-            Box box = particle.getBoundingBox();
+            AxisAlignedBB box = particle.getBoundingBox();
 
             // Hack: Grow the particle's bounding box in order to work around mis-behaved particles
-            if (this.cullingFrustum.isVisible(box.minX - 1.0D, box.minY - 1.0D, box.minZ - 1.0D, box.maxX + 1.0D, box.maxY + 1.0D, box.maxZ + 1.0D)) {
+            if (this.cullingViewFrustum.isVisible(box.minX - 1.0D, box.minY - 1.0D, box.minZ - 1.0D, box.maxX + 1.0D, box.maxY + 1.0D, box.maxZ + 1.0D)) {
                 filtered.add(particle);
             }
         }
@@ -77,7 +80,7 @@ public class MixinParticleManager {
     }
 
     @Inject(method = "renderParticles", at = @At("RETURN"))
-    private void postRenderParticles(MatrixStack matrixStack, VertexConsumerProvider.Immediate immediate, LightmapTextureManager lightmapTextureManager, Camera camera, float f, CallbackInfo ci) {
+    private void postRenderParticles(MatrixStack matrixStack,  IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f, CallbackInfo ci) {
         // Ensure particles don't linger in the temporary collection
         this.cachedQueue.clear();
     }

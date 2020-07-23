@@ -1,5 +1,6 @@
 package me.jellysquid.mods.sodium.mixin.buffers;
 
+import com.mojang.blaze3d.vertex.DefaultColorVertexBuilder;
 import me.jellysquid.mods.sodium.client.model.consumer.GlyphVertexConsumer;
 import me.jellysquid.mods.sodium.client.model.consumer.ParticleVertexConsumer;
 import me.jellysquid.mods.sodium.client.model.consumer.QuadVertexConsumer;
@@ -8,14 +9,13 @@ import me.jellysquid.mods.sodium.client.util.Norm3b;
 import me.jellysquid.mods.sodium.client.util.UnsafeUtil;
 import me.jellysquid.mods.sodium.client.util.color.ColorABGR;
 import me.jellysquid.mods.sodium.client.util.color.ColorU8;
-import me.jellysquid.mods.sodium.client.util.math.vector.Matrix4fExtended;
-import me.jellysquid.mods.sodium.client.util.math.vector.MatrixUtil;
+import me.jellysquid.mods.sodium.client.util.math.Matrix4fExtended;
+import me.jellysquid.mods.sodium.client.util.math.MatrixUtil;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.FixedColorVertexConsumer;
-import net.minecraft.client.renderer.VertexFormat;
-import net.minecraft.client.renderer.VertexFormats;
 import net.minecraft.client.renderer.model.BakedQuad;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 
 @SuppressWarnings({ "SameParameterValue", "SuspiciousNameCombination" })
 @Mixin(BufferBuilder.class)
-public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
+public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
         implements ParticleVertexConsumer, QuadVertexConsumer, GlyphVertexConsumer {
     @Shadow
     private VertexFormat format;
@@ -43,17 +43,17 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
     private int vertexCount;
 
     @Shadow
-    private boolean field_21595; // has overlay
+    private boolean field_227826_s_; // has overlay
 
     @Shadow
-    private boolean field_21594; // is baked quad format
+    private boolean field_227827_t_; // is baked quad format
 
     @Shadow
     protected abstract void grow(int size);
 
     @Override
     public void vertexParticle(float x, float y, float z, float u, float v, int color, int light) {
-        if (this.format != VertexFormats.POSITION_TEXTURE_COLOR_LIGHT) {
+        if (this.format != DefaultVertexFormats.POSITION_TEXTURE_COLOR_LIGHT) {
             this.vertexParticleFallback(x, y, z, u, v, color, light);
             return;
         }
@@ -139,7 +139,7 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
             throw new IllegalStateException();
         }
 
-        if (!this.field_21594) {
+        if (!this.field_227827_t_) {
             this.vertexQuadFallback(x, y, z, color, u, v, overlay, light, normal);
             return;
         }
@@ -164,7 +164,7 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
                 ColorABGR.unpackAlpha(color));
         this.texture(u, v);
 
-        if (this.field_21595) {
+        if (this.field_227826_s_) {
             this.overlay(overlay);
         }
 
@@ -196,7 +196,7 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
         unsafe.putFloat(i, v);
         i += 4;
 
-        if (this.field_21595) {
+        if (this.field_227826_s_) {
             unsafe.putInt(i, overlay);
             i += 4;
         }
@@ -229,7 +229,7 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
         buffer.putFloat(i, v);
         i += 4;
 
-        if (this.field_21595) {
+        if (this.field_227826_s_) {
             buffer.putInt(i, overlay);
             i += 4;
         }
@@ -242,7 +242,7 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
 
     @Override
     public void quad(MatrixStack.Entry matrices, BakedQuad quad, float[] brightnessTable, float r, float g, float b, int[] light, int overlay, boolean colorize) {
-        if (!this.field_21594) {
+        if (!this.field_227827_t_) {
             super.quad(matrices, quad, brightnessTable, r, g, b, light, overlay, colorize);
 
             return;
@@ -306,7 +306,7 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer
         float y2 = matrixExt.transformVecY(x, y, z);
         float z2 = matrixExt.transformVecZ(x, y, z);
 
-        if (this.format != VertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
+        if (this.format != DefaultVertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
             this.vertexGlyphFallback(x2, y2, z2, color, u, v, light);
             return;
         }

@@ -3,22 +3,23 @@ package me.jellysquid.mods.sodium.client.gui.widgets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.util.SoundEvents;
 import org.lwjgl.opengl.GL11;
 
 import java.util.function.Consumer;
 
-public abstract class AbstractWidget implements Drawable, Element {
+public abstract class AbstractWidget implements IRenderable, IGuiEventListener {
     protected final FontRenderer font;
 
     protected AbstractWidget() {
-        this.font = Minecraft.getInstance().fontRenderer;
+        this.font = Minecraft.getInstance().textRenderer;
     }
 
     protected void drawString(MatrixStack matrixStack, String str, int x, int y, int color) {
@@ -40,13 +41,13 @@ public abstract class AbstractWidget implements Drawable, Element {
         RenderSystem.defaultBlendFunc();
 
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 
         consumer.accept(bufferBuilder);
 
         bufferBuilder.end();
 
-        BufferRenderer.draw(bufferBuilder);
+        WorldVertexBufferUploader.draw(bufferBuilder);
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
@@ -60,7 +61,7 @@ public abstract class AbstractWidget implements Drawable, Element {
 
     protected void playClickSound() {
         Minecraft.getInstance().getSoundManager()
-                .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                .play(SimpleSound.master(SoundEvents.field_187909_gi, 1.0F));
     }
 
     protected int getStringWidth(String text) {

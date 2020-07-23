@@ -4,8 +4,8 @@ import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 import me.jellysquid.mods.sodium.client.model.light.EntityLighter;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
-import net.minecraft.client.renderer.Frustum;
-import net.minecraft.client.renderer.LightmapTextureManager;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.ViewFrustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -71,11 +71,11 @@ public abstract class MixinEntityRenderer<T extends Entity> {
 
     // [VanillaCopy] EntityRenderer#getLight(Entity, float)
     private int getSimpleLight(T entity, float tickDelta, int blockLight) {
-        return LightmapTextureManager.pack(blockLight, entity.world.getLightLevel(LightType.SKY, new BlockPos(entity.getCameraPosVec(tickDelta))));
+        return LightTexture.pack(blockLight, entity.world.getLightLevel(LightType.SKY, new BlockPos(entity.getCameraPosVec(tickDelta))));
     }
 
-    @Inject(method = "shouldRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Frustum;isVisible(Lnet/minecraft/util/math/Box;)Z", shift = At.Shift.AFTER), cancellable = true)
-    private void preShouldRender(T entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "shouldRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/ViewFrustum;isVisible(Lnet/minecraft/util/math/Box;)Z", shift = At.Shift.AFTER), cancellable = true)
+    private void preShouldRender(T entity, ViewFrustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
         // If the entity isn't culled already by other means, try to perform a second pass
         if (cir.getReturnValue() && !SodiumWorldRenderer.getInstance().isEntityVisible(entity)) {
             cir.setReturnValue(false);

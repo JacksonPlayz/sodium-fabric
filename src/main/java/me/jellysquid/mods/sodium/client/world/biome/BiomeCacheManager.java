@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceLinkedOpenHashMap;
 import me.jellysquid.mods.sodium.client.world.WorldSlice;
 import me.jellysquid.mods.sodium.common.util.pool.ObjectPool;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.biome.IBiomeMagnifier;
 
 public class BiomeCacheManager {
@@ -26,7 +27,7 @@ public class BiomeCacheManager {
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                long key = ChunkPos.asLong(x, centerY, z);
+                long key = SectionPos.asLong(x, centerY, z);
 
                 BiomeCache cache = this.caches.getAndMoveToFirst(key);
 
@@ -49,7 +50,7 @@ public class BiomeCacheManager {
         for (int x = centerX - 1; x <= centerX; x++) {
             for (int z = centerZ - 1; z <= centerZ; z++) {
                 for (int y = 0; y <= 16; y++) {
-                    BiomeCache column = this.caches.remove(ChunkPos.asLong(x, y, z));
+                    BiomeCache column = this.caches.remove(SectionPos.asLong(x, y, z));
 
                     if (column != null) {
                         this.release(column);

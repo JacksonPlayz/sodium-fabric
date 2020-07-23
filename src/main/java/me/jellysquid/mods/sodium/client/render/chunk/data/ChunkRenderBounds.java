@@ -1,6 +1,8 @@
 package me.jellysquid.mods.sodium.client.render.chunk.data;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.SectionPos;
 
 public class ChunkRenderBounds {
     public final float x1, y1, z1;
@@ -16,7 +18,7 @@ public class ChunkRenderBounds {
         this.z2 = z2;
     }
 
-    public ChunkRenderBounds(ChunkPos origin) {
+    public ChunkRenderBounds(SectionPos origin) {
         this.x1 = origin.getMinX();
         this.y1 = origin.getMinY();
         this.z1 = origin.getMinZ();
@@ -60,7 +62,7 @@ public class ChunkRenderBounds {
             this.empty = false;
         }
 
-        public ChunkRenderBounds build(ChunkPos origin) {
+        public ChunkRenderBounds build(SectionPos origin) {
             if (this.empty) {
                 return new ChunkRenderBounds(origin);
             }

@@ -1,13 +1,13 @@
 package me.jellysquid.mods.sodium.mixin.pipeline;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.vertex.DefaultColorVertexBuilder;
 import me.jellysquid.mods.sodium.client.model.quad.ModelQuadViewMutable;
 import me.jellysquid.mods.sodium.client.model.quad.sink.ModelQuadSink;
 import me.jellysquid.mods.sodium.client.util.ModelQuadUtil;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.FixedColorVertexConsumer;
-import net.minecraft.client.renderer.VertexFormat;
-import net.minecraft.client.renderer.VertexFormatElement;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.nio.ByteBuffer;
 
 @Mixin(BufferBuilder.class)
-public abstract class MixinBufferBuilder extends FixedColorVertexConsumer implements ModelQuadSink {
+public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder implements ModelQuadSink {
     @Shadow
     private VertexFormat format;
 
@@ -57,9 +57,9 @@ public abstract class MixinBufferBuilder extends FixedColorVertexConsumer implem
             }
 
             this.currentElement = elements.get(this.currentElementId);
-        } while (this.currentElement.getType() == VertexFormatElement.Type.PADDING);
+        } while (this.currentElement.getType() == VertexFormatElement.Usage.PADDING);
 
-        if (this.colorFixed && this.currentElement.getType() == VertexFormatElement.Type.COLOR) {
+        if (this.colorFixed && this.currentElement.getType() == VertexFormatElement.Usage.COLOR) {
             this.color(this.fixedRed, this.fixedGreen, this.fixedBlue, this.fixedAlpha);
         }
     }

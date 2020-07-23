@@ -33,12 +33,12 @@ public class ControlElement<T> extends AbstractWidget {
 
         if (this.option.isAvailable()) {
             if (this.option.hasChanged()) {
-                label = Formatting.ITALIC + name + " *";
+                label = TextFormatting.ITALIC + name + " *";
             } else {
-                label = Formatting.WHITE + name;
+                label = TextFormatting.WHITE + name;
             }
         } else {
-            label = String.valueOf(Formatting.GRAY) + Formatting.STRIKETHROUGH + name;
+            label = String.valueOf(TextFormatting.GRAY) + TextFormatting.STRIKETHROUGH + name;
         }
 
         this.hovered = this.dim.containsCursor(mouseX, mouseY);

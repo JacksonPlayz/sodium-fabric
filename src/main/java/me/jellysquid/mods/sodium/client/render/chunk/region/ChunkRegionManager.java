@@ -6,6 +6,7 @@ import me.jellysquid.mods.sodium.client.gl.util.MemoryTracker;
 import me.jellysquid.mods.sodium.client.render.chunk.ChunkGraphicsState;
 import me.jellysquid.mods.sodium.client.util.MathUtil;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.SectionPos;
 import org.apache.commons.lang3.Validate;
 
 public class ChunkRegionManager<T extends ChunkGraphicsState> {
@@ -49,7 +50,7 @@ public class ChunkRegionManager<T extends ChunkGraphicsState> {
     }
 
     public static long getRegionKey(int x, int y, int z) {
-        return ChunkPos.asLong(x >> BUFFER_WIDTH_SH, y >> BUFFER_HEIGHT_SH, z >> BUFFER_LENGTH_SH);
+        return SectionPos.asLong(x >> BUFFER_WIDTH_SH, y >> BUFFER_HEIGHT_SH, z >> BUFFER_LENGTH_SH);
     }
 
     public void delete() {

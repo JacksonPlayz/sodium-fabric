@@ -10,8 +10,8 @@ import me.jellysquid.mods.sodium.client.render.pipeline.RenderContextCommon;
 import me.jellysquid.mods.sodium.client.world.WorldSlice;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.BlockModels;
-import net.minecraft.client.renderer.model.BakedModel;
+import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockDisplayReader;
@@ -22,7 +22,7 @@ public class ChunkRenderContext {
     private final BlockRenderer blockRenderer;
     private final FluidRenderer fluidRenderer;
 
-    private final BlockModels models;
+    private final BlockModelShapes models;
 
     public ChunkRenderContext(Minecraft client) {
         this.lightDataCache = new ArrayLightDataCache(WorldSlice.BLOCK_LENGTH);
@@ -33,11 +33,11 @@ public class ChunkRenderContext {
         this.blockRenderer = new BlockRenderer(client, lightPipelineProvider, biomeColorBlender);
         this.fluidRenderer = new FluidRenderer(client, lightPipelineProvider, biomeColorBlender);
 
-        this.models = client.getModelManager().getBlockModels();
+        this.models = client.getBakedModelManager().getBlockModels();
     }
 
     public boolean renderBlock(IBlockDisplayReader world, BlockState state, BlockPos pos, ModelQuadSinkDelegate consumer, boolean cull) {
-        BakedModel model = this.models.getModel(state);
+        IBakedModel model = this.models.getModel(state);
         long seed = state.getRenderingSeed(pos);
 
         return this.blockRenderer.renderModel(world, state, pos, model, consumer, cull, seed);

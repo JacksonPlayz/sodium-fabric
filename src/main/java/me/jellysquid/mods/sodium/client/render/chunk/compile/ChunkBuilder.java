@@ -16,6 +16,7 @@ import me.jellysquid.mods.sodium.client.world.biome.BiomeCacheManager;
 import me.jellysquid.mods.sodium.common.util.collections.DequeDrain;
 import me.jellysquid.mods.sodium.common.util.pool.ObjectPool;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.SectionPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.ChunkPos;
@@ -182,14 +183,14 @@ public class ChunkBuilder<T extends ChunkGraphicsState> {
     /**
      * Sets the current camera position of the player used for task prioritization.
      */
-    public void setCameraPosition(double x, double y, double z) {
+    public void setActiveRenderInfoPosition(double x, double y, double z) {
         this.cameraPosition = new Vector3d(x, y, z);
     }
 
     /**
      * Returns the current camera position of the player used for task prioritization.
      */
-    public Vector3d getCameraPosition() {
+    public Vector3d getActiveRenderInfoPosition() {
         return this.cameraPosition;
     }
 
@@ -234,7 +235,7 @@ public class ChunkBuilder<T extends ChunkGraphicsState> {
      * @param pos The position of the chunk section
      * @return A world slice containing the section's context for rendering, or null if it has none
      */
-    public WorldSlice createWorldSlice(ChunkPos pos) {
+    public WorldSlice createWorldSlice(SectionPos pos) {
         Chunk[] chunks = WorldSlice.createChunkSlice(this.world, pos);
 
         if (chunks == null) {

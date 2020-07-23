@@ -20,8 +20,8 @@ import me.jellysquid.mods.sodium.common.util.DirectionUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.color.IBlockColor;
-import net.minecraft.client.renderer.model.BakedModel;
 import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
@@ -54,7 +54,7 @@ public class BlockRenderer {
         this.useAmbientOcclusion = Minecraft.isAmbientOcclusionEnabled();
     }
 
-    public boolean renderModel(IBlockDisplayReader world, BlockState state, BlockPos pos, BakedModel model, ModelQuadSinkDelegate builder, boolean cull, long seed) {
+    public boolean renderModel(IBlockDisplayReader world, BlockState state, BlockPos pos, IBakedModel model, ModelQuadSinkDelegate builder, boolean cull, long seed) {
         LightPipeline lighter = this.lighters.getLighter(this.getLightingMode(state, model));
         Vector3d offset = state.getModelOffset(world, pos);
 
@@ -141,7 +141,7 @@ public class BlockRenderer {
                 .write(copy);
     }
 
-    private LightMode getLightingMode(BlockState state, BakedModel model) {
+    private LightMode getLightingMode(BlockState state, IBakedModel model) {
         if (this.useAmbientOcclusion && model.useAmbientOcclusion() && state.getLuminance() == 0) {
             return LightMode.SMOOTH;
         } else {

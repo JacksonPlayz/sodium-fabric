@@ -2,9 +2,8 @@ package me.jellysquid.mods.sodium.mixin.particles;
 
 import me.jellysquid.mods.sodium.client.model.consumer.ParticleVertexConsumer;
 import me.jellysquid.mods.sodium.client.util.color.ColorABGR;
-import net.minecraft.client.particle.BillboardParticle;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.Camera;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.client.world.ClientWorld;
@@ -15,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(BillboardParticle.class)
+@Mixin(Particle.class)
 public abstract class MixinBillboardParticle extends Particle {
     @Shadow
     public abstract float getSize(float tickDelta);
@@ -40,8 +39,8 @@ public abstract class MixinBillboardParticle extends Particle {
      * @reason Optimize function
      * @author JellySquid
      */
-    @Overwrite
-    public void buildGeometry(IVertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+    @Overwrite(remap=false)
+    public void buildGeometry(IVertexConsumer vertexConsumer, ActiveRenderInfo camera, float tickDelta) {
         Vector3d vec3d = camera.getPos();
 
         float x = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - vec3d.getX());

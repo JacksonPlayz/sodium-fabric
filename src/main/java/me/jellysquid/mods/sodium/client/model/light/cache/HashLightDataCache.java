@@ -3,6 +3,7 @@ package me.jellysquid.mods.sodium.client.model.light.cache;
 import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
 import me.jellysquid.mods.sodium.client.model.light.data.LightDataAccess;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.IBlockDisplayReader;
 
 /**
@@ -17,7 +18,7 @@ public class HashLightDataCache extends LightDataAccess {
 
     @Override
     public long get(int x, int y, int z) {
-        long key = BlockPos.fromLong(x, y, z);
+        long key = SectionPos.asLong(x, y, z);
         long word = this.map.getAndMoveToFirst(key);
 
         if (word == 0) {

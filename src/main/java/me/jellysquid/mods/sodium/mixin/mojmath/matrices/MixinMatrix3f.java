@@ -1,11 +1,11 @@
 package me.jellysquid.mods.sodium.mixin.mojmath.matrices;
 
 import me.jellysquid.mods.sodium.client.util.Norm3b;
-import me.jellysquid.mods.sodium.client.util.math.vector.Matrix3fExtended;
+import me.jellysquid.mods.sodium.client.util.math.Matrix3fExtended;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -79,7 +79,7 @@ public class MixinMatrix3f implements Matrix3fExtended {
 
     @Override
     public int computeNormal(Direction dir) {
-        Vec3i faceNorm = dir.getVector();
+        Vector3i faceNorm = dir.getVector();
 
         float x = faceNorm.getX();
         float y = faceNorm.getY();

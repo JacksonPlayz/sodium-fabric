@@ -13,19 +13,21 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.BiomeContainer;
-import net.minecraft.world.chunk.ChunkNibbleArray;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.light.ChunkLightingView;
-import net.minecraft.world.chunk.light.LightingProvider;
+import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.lighting.IWorldLightListener;
+import net.minecraft.world.lighting.WorldLightManager;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -67,8 +69,8 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
     // The data arrays for this slice
     // These are allocated once and then re-used when the slice is released back to an object pool
     private final BlockState[] blockStates;
-    private final ChunkNibbleArray[] blockLightArrays;
-    private final ChunkNibbleArray[] skyLightArrays;
+    private final NibbleArray[] blockLightArrays;
+    private final NibbleArray[] skyLightArrays;
     private final BiomeCache[] biomeCaches;
     private final BiomeContainer[] biomeArrays;
 
@@ -97,7 +99,7 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
     // The starting point from which this slice captures blocks
     private int blockOffsetX, blockOffsetY, blockOffsetZ;
 
-    public static Chunk[] createChunkSlice(World world, ChunkPos pos) {
+    public static Chunk[] createChunkSlice(World world, SectionPos pos) {
         Chunk chunk = world.getChunk(pos.getX(), pos.getZ());
         ChunkSection section = chunk.getSectionArray()[pos.getY()];
 
@@ -128,13 +130,13 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
 
     public WorldSlice() {
         this.blockStates = new BlockState[BLOCK_COUNT];
-        this.blockLightArrays = new ChunkNibbleArray[SECTION_COUNT];
-        this.skyLightArrays = new ChunkNibbleArray[SECTION_COUNT];
+        this.blockLightArrays = new NibbleArray[SECTION_COUNT];
+        this.skyLightArrays = new NibbleArray[SECTION_COUNT];
         this.biomeCaches = new BiomeCache[CHUNK_COUNT];
         this.biomeArrays = new BiomeContainer[CHUNK_COUNT];
     }
 
-    public void init(ChunkBuilder<?> builder, World world, ChunkPos chunkPos, Chunk[] chunks) {
+    public void init(ChunkBuilder<?> builder, World world, SectionPos chunkPos, Chunk[] chunks) {
         final int minX = chunkPos.getMinX() - NEIGHBOR_BLOCK_RADIUS;
         final int minY = chunkPos.getMinY() - NEIGHBOR_BLOCK_RADIUS;
         final int minZ = chunkPos.getMinZ() - NEIGHBOR_BLOCK_RADIUS;
@@ -164,8 +166,8 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
         this.chunkOffsetZ = chunkPos.getZ() - NEIGHBOR_CHUNK_RADIUS;
 
         // Hoist the lighting providers so that they can be directly accessed
-        ChunkLightingView blockLightProvider = this.world.getLightingProvider().get(LightType.BLOCK);
-        ChunkLightingView skyLightProvider = this.world.getLightingProvider().get(LightType.SKY);
+        IWorldLightListener blockLightProvider = this.world.getLightingProvider().get(LightType.BLOCK);
+        IWorldLightListener skyLightProvider = this.world.getLightingProvider().get(LightType.SKY);
 
         // Iterate over all sliced chunks
         for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
@@ -190,7 +192,7 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
                 for (int chunkY = minChunkY; chunkY <= maxChunkY; chunkY++) {
                     int chunkYLocal = chunkY - this.chunkOffsetY;
 
-                    ChunkPos sectionPos = ChunkPos.from(chunkX, chunkY, chunkZ);
+                    SectionPos sectionPos = SectionPos.from(chunkX, chunkY, chunkZ);
                     int sectionIdx = getLocalSectionIndex(chunkXLocal, chunkYLocal, chunkZLocal);
 
                     this.blockLightArrays[sectionIdx] = blockLightProvider.getLightArray(sectionPos);
@@ -224,7 +226,7 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
         }
 
         this.biomeCacheManager = builder.getBiomeCacheManager();
-        this.biomeCacheManager.populateArrays(chunkPos.getX(), chunkPos.getY(), chunkPos.getZ(), this.biomeCaches);
+        this.biomeCacheManager.populateArrays(chunkPos.getY(), chunkPos.getY(), chunkPos.getZ(), this.biomeCaches);
     }
 
     @Override
@@ -251,17 +253,17 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
     }
 
     @Override
-    public LightingProvider getLightingProvider() {
+    public WorldLightManager getLightingProvider() {
         return this.world.getLightingProvider();
     }
 
     @Override
-    public TileEntity getTileEntity(BlockPos pos) {
-        return this.getTileEntity(pos, Chunk.CreationType.IMMEDIATE);
+    public TileEntity getBlockEntity(BlockPos pos) {
+        return this.getBlockEntity(pos, Chunk.CreateEntityType.IMMEDIATE);
     }
 
-    public TileEntity getTileEntity(BlockPos pos, Chunk.CreationType type) {
-        return this.chunks[this.getChunkIndexForBlock(pos)].getTileEntity(pos, type);
+    public TileEntity getBlockEntity(BlockPos pos, Chunk.CreateEntityType type) {
+        return this.chunks[this.getChunkIndexForBlock(pos)].getBlockEntity(pos, type);
     }
 
     @Override
@@ -306,12 +308,12 @@ public class WorldSlice extends ReusableObject implements IBlockDisplayReader, B
         return false;
     }
 
-    private int getLightLevel(ChunkNibbleArray[] arrays, BlockPos pos) {
+    private int getLightLevel(NibbleArray[] arrays, BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
 
-        ChunkNibbleArray array = arrays[this.getSectionIndexForBlock(x, y, z)];
+        NibbleArray array = arrays[this.getSectionIndexForBlock(x, y, z)];
 
         if (array != null) {
             return array.get(x & 15, y & 15, z & 15);

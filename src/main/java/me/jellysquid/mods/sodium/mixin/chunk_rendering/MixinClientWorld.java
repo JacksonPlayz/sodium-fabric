@@ -2,14 +2,14 @@ package me.jellysquid.mods.sodium.mixin.chunk_rendering;
 
 import me.jellysquid.mods.sodium.client.world.ClientWorldExtended;
 import me.jellysquid.mods.sodium.client.world.SodiumChunkManager;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.multiplayer.ClientChunkProvider;
+import net.minecraft.client.network.play.ClientPlayNetHandler;
 import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.profiler.Profiler;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,13 +24,13 @@ public abstract class MixinClientWorld implements ClientWorldExtended {
     private long biomeSeed;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(ClientPlayNetworkHandler clientPlayNetworkHandler, ClientWorld.Properties properties, RegistryKey<World> registryKey, RegistryKey<DimensionType> registryKey2, DimensionType dimensionType, int i, Supplier<Profiler> supplier, WorldRenderer worldRenderer, boolean bl, long seed, CallbackInfo ci) {
+    private void init(ClientPlayNetHandler clientPlayNetworkHandler, ClientWorld.ClientWorldInfo properties, RegistryKey<World> registryKey, RegistryKey<DimensionType> registryKey2, DimensionType dimensionType, int i, Supplier<Profiler> supplier, WorldRenderer worldRenderer, boolean bl, long seed, CallbackInfo ci) {
         this.biomeSeed = seed;
     }
 
     @Dynamic
-    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/world/ClientChunkManager"))
-    private static ClientChunkManager redirectCreateChunkManager(ClientWorld world, int renderDistance) {
+    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/multiplayer/ClientChunkProvider"))
+    private static ClientChunkProvider redirectCreateChunkManager(ClientWorld world, int renderDistance) {
         return new SodiumChunkManager(world, renderDistance);
     }
 

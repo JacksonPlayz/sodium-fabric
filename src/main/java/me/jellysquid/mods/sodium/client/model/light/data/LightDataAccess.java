@@ -24,21 +24,21 @@ import net.minecraft.world.IBlockDisplayReader;
  * You can use the various static pack/unpack methods to extract these values in a usable format.
  */
 public abstract class LightDataAccess {
-    protected static final FluidState EMPTY_FLUID_STATE = Fluids.EMPTY.getDefaultState();
+    protected static final FluidState EMPTY_FLUID_STATE = Fluids.field_204541_a.getDefaultState();
 
     private final BlockPos.Mutable pos = new BlockPos.Mutable();
     protected IBlockDisplayReader world;
 
     public long get(int x, int y, int z, Direction d1, Direction d2) {
-        return this.get(x + d1.getXOffset() + d2.getXOffset(),
-                y + d1.getYOffset() + d2.getYOffset(),
-                z + d1.getZOffset() + d2.getZOffset());
+        return this.get(x + d1.getOffsetX() + d2.getOffsetX(),
+                y + d1.getOffsetY() + d2.getOffsetY(),
+                z + d1.getOffsetZ() + d2.getOffsetZ());
     }
 
     public long get(int x, int y, int z, Direction dir) {
-        return this.get(x + dir.getXOffset(),
-                y + dir.getYOffset(),
-                z + dir.getZOffset());
+        return this.get(x + dir.getOffsetX(),
+                y + dir.getOffsetY(),
+                z + dir.getOffsetZ());
     }
 
     public long get(BlockPos pos, Direction dir) {
@@ -63,8 +63,8 @@ public abstract class LightDataAccess {
 
         float ao;
 
-        if (state.getLightValue() == 0) {
-            ao = state.getAmbientOcclusionLightValue(world, pos);
+        if (state.getLightValue(world, pos) == 0) {
+            ao = state.getAmbientOcclusionLightLevel(world, pos);
         } else {
             ao = 1.0f;
         }
@@ -72,7 +72,7 @@ public abstract class LightDataAccess {
         // FIX: Fluids are always non-translucent despite blocking light, so we need a special check here in order to
         // solve lighting issues underwater.
         boolean op = state.getFluidState() != EMPTY_FLUID_STATE || state.getOpacity(world, pos) == 0;
-        boolean fo = state.isOpaqueCube(world, pos);
+        boolean fo = state.isOpaqueFullCube(world, pos);
 
         // OPTIMIZE: Do not calculate lightmap data if the block is full and opaque
         int lm = fo ? 0 : WorldRenderer.getLightmapCoordinates(world, state, pos);

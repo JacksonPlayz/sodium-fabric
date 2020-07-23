@@ -18,11 +18,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.biome.BiomeColors;
-import net.minecraft.client.renderer.block.BlockModels;
-import net.minecraft.client.renderer.model.ModelLoader;
-import net.minecraft.client.texture.Sprite;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.tags.FluidTags;
@@ -42,9 +42,9 @@ public class FluidRenderer {
 
     private final BlockPos.Mutable scratchPos = new BlockPos.Mutable();
 
-    private final Sprite[] lavaSprites = new Sprite[2];
-    private final Sprite[] waterSprites = new Sprite[2];
-    private final Sprite waterOverlaySprite;
+    private final TextureAtlasSprite[] lavaSprites = new TextureAtlasSprite[2];
+    private final TextureAtlasSprite[] waterSprites = new TextureAtlasSprite[2];
+    private final TextureAtlasSprite waterOverlaySprite;
 
     private final ModelQuadViewMutable quad = new ModelQuad();
 
@@ -55,15 +55,15 @@ public class FluidRenderer {
     private final int[] quadColors = new int[4];
 
     public FluidRenderer(Minecraft client, LightPipelineProvider lighters, BiomeColorBlender biomeColorBlender) {
-        BlockModels models = client.getModelManager().getBlockModels();
+        BlockModelShapes models = client.getBakedModelManager().getBlockModels();
 
-        this.lavaSprites[0] = models.getModel(Blocks.LAVA.getDefaultState()).getSprite();
-        this.lavaSprites[1] = ModelLoader.LAVA_FLOW.getSprite();
+        this.lavaSprites[0] = models.getModel(Blocks.field_150353_l.getDefaultState()).getSprite();
+        this.lavaSprites[1] = ModelBakery.LAVA_FLOW.getSprite();
 
-        this.waterSprites[0] = models.getModel(Blocks.WATER.getDefaultState()).getSprite();
-        this.waterSprites[1] = ModelLoader.WATER_FLOW.getSprite();
+        this.waterSprites[0] = models.getModel(Blocks.field_150355_j.getDefaultState()).getSprite();
+        this.waterSprites[1] = ModelBakery.WATER_FLOW.getSprite();
 
-        this.waterOverlaySprite = ModelLoader.WATER_OVERLAY.getSprite();
+        this.waterOverlaySprite = ModelBakery.WATER_OVERLAY.getSprite();
 
         int normal = Norm3b.pack(0.0f, 1.0f, 0.0f);
 
@@ -77,14 +77,14 @@ public class FluidRenderer {
 
     private boolean isFluidExposed(IBlockDisplayReader world, int x, int y, int z, Fluid fluid) {
         BlockPos pos = this.scratchPos.set(x, y, z);
-        return !world.getFluidState(pos).getFluid().isEquivalentTo(fluid);
+        return !world.getFluidState(pos).getFluid().matchesType(fluid);
     }
 
     private boolean isSideExposed(IBlockDisplayReader world, int x, int y, int z, Direction dir, float height) {
-        BlockPos pos = this.scratchPos.set(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset());
+        BlockPos pos = this.scratchPos.set(x + dir.getOffsetX(), y + dir.getOffsetY(), z + dir.getOffsetZ());
         BlockState blockState = world.getBlockState(pos);
 
-        if (blockState.isOpaqueCube(world, pos)) {
+        if (blockState.isOpaqueFullCube(world, pos)) {
             VoxelShape shape = blockState.getCullingShape(world, pos);
 
             // Hoist these checks to avoid allocating the shape below
@@ -95,9 +95,9 @@ public class FluidRenderer {
                 return true;
             }
 
-            VoxelShape threshold = VoxelShapes.create(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
+            VoxelShape threshold = VoxelShapes.cuboid(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
 
-            return !VoxelShapes.isCubeSideCovered(threshold, shape, dir);
+            return !VoxelShapes.isSideCovered(threshold, shape, dir);
         }
 
         return true;
@@ -122,8 +122,8 @@ public class FluidRenderer {
             return false;
         }
 
-        boolean lava = fluidState.isTagged(FluidTags.LAVA);
-        Sprite[] sprites = lava ? this.lavaSprites : this.waterSprites;
+        boolean lava = fluidState.isIn(FluidTags.field_206960_b);
+        TextureAtlasSprite[] sprites = lava ? this.lavaSprites : this.waterSprites;
 
         boolean rendered = false;
 
@@ -150,7 +150,7 @@ public class FluidRenderer {
 
             Vector3d velocity = fluidState.getVelocity(world, pos);
 
-            Sprite sprite;
+            TextureAtlasSprite sprite;
             float u1, u2, u3, u4;
             float v1, v2, v3, v4;
 
@@ -204,7 +204,7 @@ public class FluidRenderer {
             this.calculateQuadColors(quad, world, pos, lighter, Direction.UP, 1.0F, !lava);
             this.flushQuad(consumer, quad, Direction.UP, false);
 
-            if (fluidState.getActualHeight(world, this.scratchPos.set(posX, posY + 1, posZ))) {
+            if (fluidState.func_205586_a(world, this.scratchPos.set(posX, posY + 1, posZ))) {
                 this.setVertex(quad, 3, 0.0f, 0.0f + h1, 0.0f, u1, v1);
                 this.setVertex(quad, 2, 0.0f, 0.0f + h2, 1.0F, u2, v2);
                 this.setVertex(quad, 1, 1.0F, 0.0f + h3, 1.0F, u3, v3);
@@ -216,7 +216,7 @@ public class FluidRenderer {
         }
 
         if (sfDown) {
-            Sprite sprite = sprites[0];
+            TextureAtlasSprite sprite = sprites[0];
 
             float minU = sprite.getMinU();
             float maxU = sprite.getMaxU();
@@ -299,17 +299,17 @@ public class FluidRenderer {
             }
 
             if (this.isSideExposed(world, posX, posY, posZ, dir, Math.max(c1, c2))) {
-                int adjX = posX + dir.getXOffset();
-                int adjY = posY + dir.getYOffset();
-                int adjZ = posZ + dir.getZOffset();
+                int adjX = posX + dir.getOffsetX();
+                int adjY = posY + dir.getOffsetY();
+                int adjZ = posZ + dir.getOffsetZ();
 
-                Sprite sprite = sprites[1];
+                TextureAtlasSprite sprite = sprites[1];
 
                 if (!lava) {
                     BlockPos posAdj = this.scratchPos.set(adjX, adjY, adjZ);
                     Block block = world.getBlockState(posAdj).getBlock();
 
-                    if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
+                    if (block == Blocks.field_150359_w || block instanceof StainedGlassBlock) {
                         sprite = this.waterOverlaySprite;
                     }
                 }
@@ -355,7 +355,7 @@ public class FluidRenderer {
         int[] biomeColors = null;
 
         if (colorized) {
-            biomeColors = this.biomeColorBlender.getColors(FLUID_COLOR_PROVIDER, world, Blocks.WATER.getDefaultState(), pos, quad);
+            biomeColors = this.biomeColorBlender.getColors(FLUID_COLOR_PROVIDER, world, Blocks.field_150355_j.getDefaultState(), pos, quad);
         }
 
         for (int i = 0; i < 4; i++) {
@@ -410,7 +410,7 @@ public class FluidRenderer {
             BlockState blockState = world.getBlockState(pos);
             FluidState fluidState = blockState.getFluidState();
 
-            if (fluidState.getFluid().isEquivalentTo(fluid)) {
+            if (fluidState.getFluid().matchesType(fluid)) {
                 float height = fluidState.getHeight();
 
                 if (height >= 0.8F) {

@@ -3,14 +3,14 @@ package me.jellysquid.mods.sodium.mixin.textures;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.render.texture.SpriteExtended;
-import net.minecraft.client.resource.metadata.AnimationResourceMetadata;
-import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.data.AnimationMetadataSection;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(Sprite.class)
+@Mixin(TextureAtlasSprite.class)
 public abstract class MixinSprite implements SpriteExtended {
     private boolean forceNextUpdate;
 
@@ -19,7 +19,7 @@ public abstract class MixinSprite implements SpriteExtended {
 
     @Shadow
     @Final
-    private AnimationResourceMetadata animationMetadata;
+    private AnimationMetadataSection animationMetadata;
 
     @Shadow
     private int frameIndex;
@@ -32,7 +32,7 @@ public abstract class MixinSprite implements SpriteExtended {
 
     @Shadow
     @Final
-    private Sprite.Interpolation interpolation;
+    private TextureAtlasSprite.InterpolationData interpolation;
 
     /**
      * @author JellySquid

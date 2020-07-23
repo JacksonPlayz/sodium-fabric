@@ -15,12 +15,13 @@ import me.jellysquid.mods.sodium.client.world.WorldSlice;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.client.renderer.chunk.SetVisibility;
+import net.minecraft.client.renderer.chunk.VisGraph;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.client.renderer.RenderLayer;
-import net.minecraft.client.renderer.RenderLayers;
-import net.minecraft.client.renderer.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.block.entity.BlockEntityRenderer;
-import net.minecraft.client.renderer.chunk.ChunkOcclusionDataBuilder;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
@@ -43,7 +44,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
     public ChunkRenderRebuildTask(ChunkBuilder<T> chunkBuilder, ChunkRenderContainer<T> render, WorldSlice slice, BlockPos offset) {
         this.chunkBuilder = chunkBuilder;
         this.render = render;
-        this.camera = chunkBuilder.getCameraPosition();
+        this.camera = chunkBuilder.getActiveRenderInfoPosition();
         this.slice = slice;
         this.offset = offset;
     }
@@ -51,7 +52,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
     @Override
     public ChunkBuildResult<T> performBuild(ChunkRenderContext pipeline, ChunkBuildBuffers buffers, CancellationSource cancellationSource) {
         ChunkRenderData.Builder renderData = new ChunkRenderData.Builder();
-        ChunkOcclusionDataBuilder occluder = new ChunkOcclusionDataBuilder();
+        VisGraph occluder = new VisGraph();
         ChunkRenderBounds.Builder bounds = new ChunkRenderBounds.Builder();
 
         pipeline.init(this.slice, this.slice.getBlockOffsetX(), this.slice.getBlockOffsetY(), this.slice.getBlockOffsetZ());
@@ -85,7 +86,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                     pos.set(x, y, z);
 
                     if (block.getRenderType(blockState) == BlockRenderType.MODEL) {
-                        RenderLayer layer = RenderLayers.getBlockLayer(blockState);
+                        RenderType layer = RenderTypeLookup.getBlockLayer(blockState);
 
                         ChunkBuildBuffers.ChunkBuildBufferDelegate builder = buffers.get(layer);
                         builder.setOffset(x - offset.getX(), y - offset.getY(), z - offset.getZ());
@@ -98,7 +99,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                     FluidState fluidState = block.getFluidState(blockState);
 
                     if (!fluidState.isEmpty()) {
-                        RenderLayer layer = RenderLayers.getFluidLayer(fluidState);
+                        RenderType layer = RenderTypeLookup.getFluidLayer(fluidState);
 
                         ChunkBuildBuffers.ChunkBuildBufferDelegate builder = buffers.get(layer);
                         builder.setOffset(x - offset.getX(), y - offset.getY(), z - offset.getZ());
@@ -109,10 +110,10 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                     }
 
                     if (block.hasBlockEntity()) {
-                        TileEntity entity = this.slice.getTileEntity(pos, Chunk.CreationType.CHECK);
+                        TileEntity entity = this.slice.getBlockEntity(pos, Chunk.CreateEntityType.CHECK);
 
                         if (entity != null) {
-                            BlockEntityRenderer<TileEntity> renderer = BlockEntityRenderDispatcher.INSTANCE.get(entity);
+                            TileEntityRenderer<TileEntity> renderer = TileEntityRendererDispatcher.INSTANCE.get(entity);
 
                             if (renderer != null) {
                                 renderData.addBlockEntity(entity, !renderer.rendersOutsideBoundingBox(entity));

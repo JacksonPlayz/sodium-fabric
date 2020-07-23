@@ -1,8 +1,8 @@
 package me.jellysquid.mods.sodium.mixin.models;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.BakedModel;
 import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.MultipartBakedModel;
 import net.minecraft.util.Direction;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,15 +19,15 @@ import java.util.function.Predicate;
 
 @Mixin(MultipartBakedModel.class)
 public class MixinMultipartBakedModel {
-    private Map<BlockState, List<BakedModel>> stateCacheFast;
+    private Map<BlockState, List<IBakedModel>> stateCacheFast;
 
     @Shadow
     @Final
-    private List<Pair<Predicate<BlockState>, BakedModel>> components;
+    private List<Pair<Predicate<BlockState>, IBakedModel>> components;
 
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(List<Pair<Predicate<BlockState>, BakedModel>> components, CallbackInfo ci) {
+    private void init(List<Pair<Predicate<BlockState>, IBakedModel>> components, CallbackInfo ci) {
         this.stateCacheFast = new IdentityHashMap<>();
     }
 
@@ -41,12 +41,12 @@ public class MixinMultipartBakedModel {
             return Collections.emptyList();
         }
 
-        List<BakedModel> models = this.stateCacheFast.get(state);
+        List<IBakedModel> models = this.stateCacheFast.get(state);
 
         if (models == null) {
             models = new ArrayList<>(this.components.size());
 
-            for (Pair<Predicate<BlockState>, BakedModel> pair : this.components) {
+            for (Pair<Predicate<BlockState>, IBakedModel> pair : this.components) {
                 if ((pair.getLeft()).test(state)) {
                     models.add(pair.getRight());
                 }
@@ -59,7 +59,7 @@ public class MixinMultipartBakedModel {
 
         long seed = random.nextLong();
 
-        for (BakedModel model : models) {
+        for (IBakedModel model : models) {
             random.setSeed(seed);
 
             list.addAll(model.getQuads(state, face, random));

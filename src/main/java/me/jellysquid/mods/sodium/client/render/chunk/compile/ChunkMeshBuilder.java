@@ -6,8 +6,8 @@ import me.jellysquid.mods.sodium.client.model.quad.ModelQuadEncoder;
 import me.jellysquid.mods.sodium.client.model.quad.ModelQuadViewMutable;
 import me.jellysquid.mods.sodium.client.model.quad.sink.ModelQuadSink;
 import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkRenderData;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.GlAllocationUtils;
+import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 import java.nio.ByteBuffer;
 
@@ -61,7 +61,7 @@ public class ChunkMeshBuilder implements ModelQuadSink {
         this.stride = format.getStride() * 4;
         this.encoder = SodiumVertexFormats.getEncoder(format);
 
-        this.buffer = GlAllocationUtils.allocateByteBuffer(initialSize);
+        this.buffer = GLAllocation.allocateByteBuffer(initialSize);
         this.capacity = initialSize;
     }
 
@@ -103,7 +103,7 @@ public class ChunkMeshBuilder implements ModelQuadSink {
         // Write the quad to the backing buffer using the marked position from earlier
         this.encoder.write(quad, this.buffer, position);
 
-        Sprite sprite = quad.getSprite();
+        TextureAtlasSprite sprite = quad.getSprite();
 
         if (sprite != null) {
             this.renderData.addSprite(sprite);
@@ -115,7 +115,7 @@ public class ChunkMeshBuilder implements ModelQuadSink {
         int cap = Math.max(this.capacity * 2, this.capacity + len);
 
         // Allocate a new buffer and copy the old buffer's contents into it
-        ByteBuffer buffer = GlAllocationUtils.allocateByteBuffer(cap);
+        ByteBuffer buffer = GLAllocation.allocateByteBuffer(cap);
         buffer.put(this.buffer);
         buffer.position(0);
 
