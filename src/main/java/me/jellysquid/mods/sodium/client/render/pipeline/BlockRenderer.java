@@ -56,7 +56,7 @@ public class BlockRenderer {
 
     public boolean renderModel(IBlockDisplayReader world, BlockState state, BlockPos pos, IBakedModel model, ModelQuadSinkDelegate builder, boolean cull, long seed) {
         LightPipeline lighter = this.lighters.getLighter(this.getLightingMode(state, model));
-        Vector3d offset = state.getModelOffset(world, pos);
+        Vector3d offset = state.getOffset(world, pos);
 
         boolean rendered = false;
 
@@ -99,9 +99,9 @@ public class BlockRenderer {
             BakedQuad quad = quads.get(i);
 
             QuadLightData light = this.cachedQuadLightData;
-            lighter.calculate((ModelQuadView) quad, pos, light, quad.getFace(), quad.hasShade());
+            lighter.calculate((ModelQuadView) quad, pos, light, quad.getFace(), quad.func_239287_f_());
 
-            if (quad.hasColor() && colorizer == null) {
+            if (quad.hasTintIndex() && colorizer == null) {
                 colorizer = this.blockColors.getColorProvider(state);
             }
 
@@ -119,7 +119,7 @@ public class BlockRenderer {
         int norm = ModelQuadUtil.getFacingNormal(bakedQuad.getFace());
         int[] colors = null;
 
-        if (bakedQuad.hasColor()) {
+        if (bakedQuad.hasTintIndex()) {
             colors = this.biomeColorBlender.getColors(colorProvider, world, state, pos, src);
         }
 
@@ -142,7 +142,7 @@ public class BlockRenderer {
     }
 
     private LightMode getLightingMode(BlockState state, IBakedModel model) {
-        if (this.useAmbientOcclusion && model.useAmbientOcclusion() && state.getLuminance() == 0) {
+        if (this.useAmbientOcclusion && model.isAmbientOcclusion() && state.getLightValue() == 0) {
             return LightMode.SMOOTH;
         } else {
             return LightMode.FLAT;

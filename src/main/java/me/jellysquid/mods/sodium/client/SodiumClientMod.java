@@ -1,7 +1,14 @@
 package me.jellysquid.mods.sodium.client;
 
 import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
+import me.jellysquid.mods.sodium.client.gui.SodiumOptionsGUI;
 import me.jellysquid.mods.sodium.client.util.UnsafeUtil;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.IngameMenuScreen;
+import net.minecraft.client.gui.screen.OptionsScreen;
+import net.minecraft.client.gui.screen.VideoSettingsScreen;
+import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.apache.logging.log4j.LogManager;
@@ -14,10 +21,6 @@ import java.io.File;
 public class SodiumClientMod {
     private static SodiumGameOptions CONFIG;
     private static Logger LOGGER;
-
-    private void onInitializeClient(final FMLClientSetupEvent event) {
-
-    }
 
     public static SodiumGameOptions options() {
         if (CONFIG == null) {

@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
@@ -34,8 +35,8 @@ import java.util.Random;
 public class MixinBlockModelRenderer {
     private final XoRoShiRoRandom random = new XoRoShiRoRandom();
 
-    @Inject(method = "render(Lnet/minecraft/world/IBlockDisplayReader;Lnet/minecraft/client/renderer/model/IBakedModel;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lcom/mojang/blaze3d/matrix/MatrixStack;Lcom/mojang/blaze3d/vertex/IVertexConsumer;ZLjava/util/Random;JI)Z", at = @At("HEAD"), cancellable = true, remap = false)
-    private void preRenderBlockInWorld(IBlockDisplayReader world, IBakedModel model, BlockState state, BlockPos pos, MatrixStack matrixStack, IVertexConsumer consumer, boolean cull, Random rand, long seed, int int_1, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "renderModel(Lnet/minecraft/world/IBlockDisplayReader;Lnet/minecraft/client/renderer/model/IBakedModel;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lcom/mojang/blaze3d/matrix/MatrixStack;Lcom/mojang/blaze3d/vertex/IVertexBuilder;ZLjava/util/Random;JI)Z", at = @At("HEAD"), cancellable = true, remap = false)
+    private void preRenderModel(IBlockDisplayReader world, IBakedModel model, BlockState state, BlockPos pos, MatrixStack matrixStack, IVertexBuilder consumer, boolean cull, Random rand, long seed, int int_1, CallbackInfoReturnable<Boolean> cir) {
         GlobalRenderContext renderer = GlobalRenderContext.getInstance(world);
         BlockRenderer blockRenderer = renderer.getBlockRenderer();
 
@@ -49,7 +50,7 @@ public class MixinBlockModelRenderer {
      * @author JellySquid
      */
     @Overwrite(remap=false)
-    public void render(MatrixStack.Entry entry, IVertexConsumer vertexConsumer, BlockState blockState, IBakedModel bakedModel, float red, float green, float blue, int light, int overlay) {
+    public void renderModel(MatrixStack.Entry entry, IVertexBuilder vertexConsumer, BlockState blockState, IBakedModel bakedModel, float red, float green, float blue, int light, int overlay, net.minecraftforge.client.model.data.IModelData modelData) {
         XoRoShiRoRandom random = this.random;
         QuadVertexConsumer quadConsumer = (QuadVertexConsumer) vertexConsumer;
 
@@ -81,7 +82,7 @@ public class MixinBlockModelRenderer {
         }
 
         for (BakedQuad bakedQuad : list) {
-            int color = bakedQuad.hasColor() ? defaultColor : 0xFFFFFFFF;
+            int color = bakedQuad.hasTintIndex() ? defaultColor : 0xFFFFFFFF;
 
             ModelQuadView quad = ((ModelQuadView) bakedQuad);
 

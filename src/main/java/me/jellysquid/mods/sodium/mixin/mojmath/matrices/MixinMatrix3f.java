@@ -12,45 +12,45 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Matrix3f.class)
 public class MixinMatrix3f implements Matrix3fExtended {
     @Shadow
-    protected float a00;
+    protected float m00;
 
     @Shadow
-    protected float a10;
+    protected float m10;
 
     @Shadow
-    protected float a20;
+    protected float m20;
 
     @Shadow
-    protected float a01;
+    protected float m01;
 
     @Shadow
-    protected float a11;
+    protected float m11;
 
     @Shadow
-    protected float a21;
+    protected float m21;
 
     @Shadow
-    protected float a02;
+    protected float m02;
 
     @Shadow
-    protected float a12;
+    protected float m12;
 
     @Shadow
-    protected float a22;
+    protected float m22;
 
     @Override
     public float transformVecX(float x, float y, float z) {
-        return this.a00 * x + this.a01 * y + this.a02 * z;
+        return this.m00 * x + this.m01 * y + this.m02 * z;
     }
 
     @Override
     public float transformVecY(float x, float y, float z) {
-        return this.a10 * x + this.a11 * y + this.a12 * z;
+        return this.m10 * x + this.m11 * y + this.m12 * z;
     }
 
     @Override
     public float transformVecZ(float x, float y, float z) {
-        return this.a20 * x + this.a21 * y + this.a22 * z;
+        return this.m20 * x + this.m21 * y + this.m22 * z;
     }
 
     @Override
@@ -79,15 +79,15 @@ public class MixinMatrix3f implements Matrix3fExtended {
 
     @Override
     public int computeNormal(Direction dir) {
-        Vector3i faceNorm = dir.getVector();
+        Vector3i faceNorm = dir.getDirectionVec();
 
         float x = faceNorm.getX();
         float y = faceNorm.getY();
         float z = faceNorm.getZ();
 
-        float x2 = this.a00 * x + this.a01 * y + this.a02 * z;
-        float y2 = this.a10 * x + this.a11 * y + this.a12 * z;
-        float z2 = this.a20 * x + this.a21 * y + this.a22 * z;
+        float x2 = this.m00 * x + this.m01 * y + this.m02 * z;
+        float y2 = this.m10 * x + this.m11 * y + this.m12 * z;
+        float z2 = this.m20 * x + this.m21 * y + this.m22 * z;
 
         return Norm3b.pack(x2, y2, z2);
     }
@@ -98,26 +98,26 @@ public class MixinMatrix3f implements Matrix3fExtended {
 
         float xx = 2.0F * x * x;
 
-        float ta11 = 1.0F - xx;
-        float ta22 = 1.0F - xx;
+        float tm11 = 1.0F - xx;
+        float tm22 = 1.0F - xx;
 
         float xw = x * w;
-        float ta21 = 2.0F * xw;
-        float ta12 = 2.0F * -xw;
+        float tm21 = 2.0F * xw;
+        float tm12 = 2.0F * -xw;
 
-        float a01 = this.a01 * ta11 + this.a02 * ta21;
-        float a02 = this.a01 * ta12 + this.a02 * ta22;
-        float a11 = this.a11 * ta11 + this.a12 * ta21;
-        float a12 = this.a11 * ta12 + this.a12 * ta22;
-        float a21 = this.a21 * ta11 + this.a22 * ta21;
-        float a22 = this.a21 * ta12 + this.a22 * ta22;
+        float m01 = this.m01 * tm11 + this.m02 * tm21;
+        float m02 = this.m01 * tm12 + this.m02 * tm22;
+        float m11 = this.m11 * tm11 + this.m12 * tm21;
+        float m12 = this.m11 * tm12 + this.m12 * tm22;
+        float m21 = this.m21 * tm11 + this.m22 * tm21;
+        float m22 = this.m21 * tm12 + this.m22 * tm22;
 
-        this.a01 = a01;
-        this.a02 = a02;
-        this.a11 = a11;
-        this.a12 = a12;
-        this.a21 = a21;
-        this.a22 = a22;
+        this.m01 = m01;
+        this.m02 = m02;
+        this.m11 = m11;
+        this.m12 = m12;
+        this.m21 = m21;
+        this.m22 = m22;
     }
 
     private void rotateY(Quaternion quaternion) {
@@ -126,27 +126,27 @@ public class MixinMatrix3f implements Matrix3fExtended {
 
         float yy = 2.0F * y * y;
 
-        float ta00 = 1.0F - yy;
-        float ta22 = 1.0F - yy;
+        float tm00 = 1.0F - yy;
+        float tm22 = 1.0F - yy;
 
         float yw = y * w;
 
-        float ta20 = 2.0F * (-yw);
-        float ta02 = 2.0F * (+yw);
+        float tm20 = 2.0F * (-yw);
+        float tm02 = 2.0F * (+yw);
 
-        float a00 = this.a00 * ta00 + this.a02 * ta20;
-        float a02 = this.a00 * ta02 + this.a02 * ta22;
-        float a10 = this.a10 * ta00 + this.a12 * ta20;
-        float a12 = this.a10 * ta02 + this.a12 * ta22;
-        float a20 = this.a20 * ta00 + this.a22 * ta20;
-        float a22 = this.a20 * ta02 + this.a22 * ta22;
+        float m00 = this.m00 * tm00 + this.m02 * tm20;
+        float m02 = this.m00 * tm02 + this.m02 * tm22;
+        float m10 = this.m10 * tm00 + this.m12 * tm20;
+        float m12 = this.m10 * tm02 + this.m12 * tm22;
+        float m20 = this.m20 * tm00 + this.m22 * tm20;
+        float m22 = this.m20 * tm02 + this.m22 * tm22;
 
-        this.a00 = a00;
-        this.a02 = a02;
-        this.a10 = a10;
-        this.a12 = a12;
-        this.a20 = a20;
-        this.a22 = a22;
+        this.m00 = m00;
+        this.m02 = m02;
+        this.m10 = m10;
+        this.m12 = m12;
+        this.m20 = m20;
+        this.m22 = m22;
     }
 
     private void rotateZ(Quaternion quaternion) {
@@ -155,27 +155,27 @@ public class MixinMatrix3f implements Matrix3fExtended {
 
         float zz = 2.0F * z * z;
 
-        float ta00 = 1.0F - zz;
-        float ta11 = 1.0F - zz;
+        float tm00 = 1.0F - zz;
+        float tm11 = 1.0F - zz;
 
         float zw = z * w;
 
-        float ta10 = 2.0F * (0.0F + zw);
-        float ta01 = 2.0F * (0.0F - zw);
+        float tm10 = 2.0F * (0.0F + zw);
+        float tm01 = 2.0F * (0.0F - zw);
 
-        float a00 = this.a00 * ta00 + this.a01 * ta10;
-        float a01 = this.a00 * ta01 + this.a01 * ta11;
-        float a10 = this.a10 * ta00 + this.a11 * ta10;
-        float a11 = this.a10 * ta01 + this.a11 * ta11;
-        float a20 = this.a20 * ta00 + this.a21 * ta10;
-        float a21 = this.a20 * ta01 + this.a21 * ta11;
+        float m00 = this.m00 * tm00 + this.m01 * tm10;
+        float m01 = this.m00 * tm01 + this.m01 * tm11;
+        float m10 = this.m10 * tm00 + this.m11 * tm10;
+        float m11 = this.m10 * tm01 + this.m11 * tm11;
+        float m20 = this.m20 * tm00 + this.m21 * tm10;
+        float m21 = this.m20 * tm01 + this.m21 * tm11;
 
-        this.a00 = a00;
-        this.a01 = a01;
-        this.a10 = a10;
-        this.a11 = a11;
-        this.a20 = a20;
-        this.a21 = a21;
+        this.m00 = m00;
+        this.m01 = m01;
+        this.m10 = m10;
+        this.m11 = m11;
+        this.m20 = m20;
+        this.m21 = m21;
     }
 
     private void rotateXYZ(Quaternion quaternion) {
@@ -188,9 +188,9 @@ public class MixinMatrix3f implements Matrix3fExtended {
         float yy = 2.0F * y * y;
         float zz = 2.0F * z * z;
 
-        float ta00 = 1.0F - yy - zz;
-        float ta11 = 1.0F - zz - xx;
-        float ta22 = 1.0F - xx - yy;
+        float tm00 = 1.0F - yy - zz;
+        float tm11 = 1.0F - zz - xx;
+        float tm22 = 1.0F - xx - yy;
 
         float xy = x * y;
         float yz = y * z;
@@ -199,31 +199,31 @@ public class MixinMatrix3f implements Matrix3fExtended {
         float yw = y * w;
         float zw = z * w;
 
-        float ta10 = 2.0F * (xy + zw);
-        float ta01 = 2.0F * (xy - zw);
-        float ta20 = 2.0F * (zx - yw);
-        float ta02 = 2.0F * (zx + yw);
-        float ta21 = 2.0F * (yz + xw);
-        float ta12 = 2.0F * (yz - xw);
+        float tm10 = 2.0F * (xy + zw);
+        float tm01 = 2.0F * (xy - zw);
+        float tm20 = 2.0F * (zx - yw);
+        float tm02 = 2.0F * (zx + yw);
+        float tm21 = 2.0F * (yz + xw);
+        float tm12 = 2.0F * (yz - xw);
 
-        float a00 = this.a00 * ta00 + this.a01 * ta10 + this.a02 * ta20;
-        float a01 = this.a00 * ta01 + this.a01 * ta11 + this.a02 * ta21;
-        float a02 = this.a00 * ta02 + this.a01 * ta12 + this.a02 * ta22;
-        float a10 = this.a10 * ta00 + this.a11 * ta10 + this.a12 * ta20;
-        float a11 = this.a10 * ta01 + this.a11 * ta11 + this.a12 * ta21;
-        float a12 = this.a10 * ta02 + this.a11 * ta12 + this.a12 * ta22;
-        float a20 = this.a20 * ta00 + this.a21 * ta10 + this.a22 * ta20;
-        float a21 = this.a20 * ta01 + this.a21 * ta11 + this.a22 * ta21;
-        float a22 = this.a20 * ta02 + this.a21 * ta12 + this.a22 * ta22;
+        float m00 = this.m00 * tm00 + this.m01 * tm10 + this.m02 * tm20;
+        float m01 = this.m00 * tm01 + this.m01 * tm11 + this.m02 * tm21;
+        float m02 = this.m00 * tm02 + this.m01 * tm12 + this.m02 * tm22;
+        float m10 = this.m10 * tm00 + this.m11 * tm10 + this.m12 * tm20;
+        float m11 = this.m10 * tm01 + this.m11 * tm11 + this.m12 * tm21;
+        float m12 = this.m10 * tm02 + this.m11 * tm12 + this.m12 * tm22;
+        float m20 = this.m20 * tm00 + this.m21 * tm10 + this.m22 * tm20;
+        float m21 = this.m20 * tm01 + this.m21 * tm11 + this.m22 * tm21;
+        float m22 = this.m20 * tm02 + this.m21 * tm12 + this.m22 * tm22;
 
-        this.a00 = a00;
-        this.a01 = a01;
-        this.a02 = a02;
-        this.a10 = a10;
-        this.a11 = a11;
-        this.a12 = a12;
-        this.a20 = a20;
-        this.a21 = a21;
-        this.a22 = a22;
+        this.m00 = m00;
+        this.m01 = m01;
+        this.m02 = m02;
+        this.m10 = m10;
+        this.m11 = m11;
+        this.m12 = m12;
+        this.m20 = m20;
+        this.m21 = m21;
+        this.m22 = m22;
     }
 }

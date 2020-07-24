@@ -1,5 +1,6 @@
 package me.jellysquid.mods.sodium.mixin.buffers;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import me.jellysquid.mods.sodium.client.model.consumer.ParticleVertexConsumer;
 import me.jellysquid.mods.sodium.client.model.consumer.QuadVertexConsumer;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
@@ -13,26 +14,26 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class MixinSpriteTexturedVertexConsumer implements QuadVertexConsumer, ParticleVertexConsumer {
     @Shadow
     @Final
-    private IVertexConsumer parent;
+    private IVertexBuilder vertexBuilder;
 
     @Shadow
     @Final
-    private TextureAtlasSprite sprite;
+    private TextureAtlasSprite atlasSprite;
 
     @Override
     public void vertexQuad(float x, float y, float z, int color, float u, float v, int light, int overlay, int norm) {
-        u = this.sprite.getFrameU(u * 16.0F);
-        v = this.sprite.getFrameV(v * 16.0F);
+        u = this.atlasSprite.getInterpolatedU(u * 16.0F);
+        v = this.atlasSprite.getInterpolatedV(v * 16.0F);
 
-        ((QuadVertexConsumer) this.parent).vertexQuad(x, y, z, color, u, v, light, overlay, norm);
+        ((QuadVertexConsumer) this.vertexBuilder).vertexQuad(x, y, z, color, u, v, light, overlay, norm);
     }
 
     @Override
     public void vertexParticle(float x, float y, float z, float u, float v, int color, int light) {
-        u = this.sprite.getFrameU(u * 16.0F);
-        v = this.sprite.getFrameV(v * 16.0F);
+        u = this.atlasSprite.getInterpolatedU(u * 16.0F);
+        v = this.atlasSprite.getInterpolatedV(v * 16.0F);
 
-        ((ParticleVertexConsumer) this.parent).vertexParticle(x, y, z, u, v, color, light);
+        ((ParticleVertexConsumer) this.vertexBuilder).vertexParticle(x, y, z, u, v, color, light);
     }
 
 }

@@ -23,7 +23,7 @@ public class MixinMultipartBakedModel {
 
     @Shadow
     @Final
-    private List<Pair<Predicate<BlockState>, IBakedModel>> components;
+    private List<Pair<Predicate<BlockState>, IBakedModel>> selectors;
 
 
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -44,9 +44,9 @@ public class MixinMultipartBakedModel {
         List<IBakedModel> models = this.stateCacheFast.get(state);
 
         if (models == null) {
-            models = new ArrayList<>(this.components.size());
+            models = new ArrayList<>(this.selectors.size());
 
-            for (Pair<Predicate<BlockState>, IBakedModel> pair : this.components) {
+            for (Pair<Predicate<BlockState>, IBakedModel> pair : this.selectors) {
                 if ((pair.getLeft()).test(state)) {
                     models.add(pair.getRight());
                 }

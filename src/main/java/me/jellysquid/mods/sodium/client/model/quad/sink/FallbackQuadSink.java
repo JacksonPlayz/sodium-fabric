@@ -1,5 +1,6 @@
 package me.jellysquid.mods.sodium.client.model.quad.sink;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import me.jellysquid.mods.sodium.client.model.quad.ModelQuadViewMutable;
 import me.jellysquid.mods.sodium.client.model.quad.properties.ModelQuadFacing;
 import me.jellysquid.mods.sodium.client.util.Norm3b;
@@ -20,7 +21,7 @@ import net.minecraft.util.math.vector.Matrix4f;
  * vertex and unpack values as assumptions can't be made about what the backing buffer type is.
  */
 public class FallbackQuadSink implements ModelQuadSink, ModelQuadSinkDelegate {
-    private final IVertexConsumer consumer;
+    private final IVertexBuilder consumer;
 
     // Hoisted matrices to avoid lookups in peeking
     private final Matrix4f modelMatrix;
@@ -30,10 +31,10 @@ public class FallbackQuadSink implements ModelQuadSink, ModelQuadSinkDelegate {
     private final Vector4f vector;
     private final Vector3f normal;
 
-    public FallbackQuadSink(IVertexConsumer consumer, MatrixStack matrixStack) {
+    public FallbackQuadSink(IVertexBuilder consumer, MatrixStack matrixStack) {
         this.consumer = consumer;
-        this.modelMatrix = matrixStack.peek().getModel();
-        this.normalMatrix = matrixStack.peek().getNormal();
+        this.modelMatrix = matrixStack.getLast().getMatrix();
+        this.normalMatrix = matrixStack.getLast().getNormal();
         this.vector = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
         this.normal = new Vector3f(0.0f, 0.0f, 0.0f);
     }
@@ -71,7 +72,7 @@ public class FallbackQuadSink implements ModelQuadSink, ModelQuadSinkDelegate {
             normVec.set(normX, normY, normZ);
             normVec.transform(this.normalMatrix);
 
-            this.consumer.vertex(posVec.getX(), posVec.getY(), posVec.getZ(), r, g, b, a, u, v, OverlayTexture.DEFAULT_UV, light, normVec.getX(), normVec.getY(), normVec.getZ());
+            this.consumer.addVertex(posVec.getX(), posVec.getY(), posVec.getZ(), r, g, b, a, u, v, OverlayTexture.NO_OVERLAY, light, normVec.getX(), normVec.getY(), normVec.getZ());
         }
     }
 

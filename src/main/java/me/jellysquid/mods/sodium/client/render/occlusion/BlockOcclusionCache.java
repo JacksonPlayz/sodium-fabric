@@ -30,15 +30,15 @@ public class BlockOcclusionCache {
      */
     public boolean shouldDrawSide(BlockState selfState, IBlockReader view, BlockPos pos, Direction facing) {
         BlockPos.Mutable adjPos = this.cpos;
-        adjPos.set(pos.getX() + facing.getOffsetX(), pos.getY() + facing.getOffsetY(), pos.getZ() + facing.getOffsetZ());
+        adjPos.setPos(pos.getX() + facing.getXOffset(), pos.getY() + facing.getYOffset(), pos.getZ() + facing.getZOffset());
 
         BlockState adjState = view.getBlockState(adjPos);
 
         if (selfState.isSideInvisible(adjState, facing)) {
             return false;
-        } else if (adjState.isOpaque()) {
-            VoxelShape selfShape = selfState.getCullingFace(view, pos, facing);
-            VoxelShape adjShape = adjState.getCullingFace(view, adjPos, facing.getOpposite());
+        } else if (adjState.isSolid()) {
+            VoxelShape selfShape = selfState.getFaceOcclusionShape(view, pos, facing);
+            VoxelShape adjShape = adjState.getFaceOcclusionShape(view, adjPos, facing.getOpposite());
 
             if (selfShape == VoxelShapes.fullCube() && adjShape == VoxelShapes.fullCube()) {
                 return false;
@@ -62,7 +62,7 @@ public class BlockOcclusionCache {
             return cached == 1;
         }
 
-        boolean ret = VoxelShapes.matchesAnywhere(selfShape, adjShape, IBooleanFunction.ONLY_FIRST);
+        boolean ret = VoxelShapes.compare(selfShape, adjShape, IBooleanFunction.ONLY_FIRST);
 
         this.map.put(cache.copy(), (byte) (ret ? 1 : 0));
 

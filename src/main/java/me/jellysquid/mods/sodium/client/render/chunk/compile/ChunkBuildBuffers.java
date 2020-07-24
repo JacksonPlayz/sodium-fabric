@@ -40,12 +40,12 @@ public class ChunkBuildBuffers {
         this.delegates = new ChunkBuildBufferDelegate[BlockRenderPass.COUNT];
         this.buildersByLayer = new ChunkMeshBuilder[BlockRenderPass.COUNT][ModelQuadFacing.COUNT];
 
-        for (RenderType layer : RenderType.getBlockLayers()) {
+        for (RenderType layer : RenderType.getBlockRenderTypes()) {
             int passId = this.renderPassManager.getRenderPassId(layer);
 
             for (ModelQuadFacing facing : ModelQuadFacing.VALUES) {
                 this.buildersByLayer[passId][facing.ordinal()] =
-                        new ChunkMeshBuilder(format, layer.getExpectedBufferSize() / ModelQuadFacing.COUNT);
+                        new ChunkMeshBuilder(format, layer.getBufferSize() / ModelQuadFacing.COUNT);
             }
 
             this.delegates[passId] = new ChunkBuildBufferDelegate(this.buildersByLayer[passId]);
@@ -107,7 +107,7 @@ public class ChunkBuildBuffers {
             return null;
         }
 
-        ByteBuffer buffer = GLAllocation.allocateByteBuffer(bufferLen);
+        ByteBuffer buffer = GLAllocation.createDirectByteBuffer(bufferLen);
 
         for (Map.Entry<ModelQuadFacing, BufferSlice> entry : meshData.getSlices()) {
             BufferSlice slice = entry.getValue();

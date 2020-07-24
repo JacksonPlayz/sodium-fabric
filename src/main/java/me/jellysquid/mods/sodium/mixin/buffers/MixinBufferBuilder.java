@@ -31,36 +31,36 @@ import java.nio.ByteBuffer;
 public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
         implements ParticleVertexConsumer, QuadVertexConsumer, GlyphVertexConsumer {
     @Shadow
-    private VertexFormat format;
+    private VertexFormat vertexFormat;
 
     @Shadow
-    private ByteBuffer buffer;
+    private ByteBuffer byteBuffer;
 
     @Shadow
-    private int elementOffset;
+    private int nextElementBytes;
 
     @Shadow
     private int vertexCount;
 
     @Shadow
-    private boolean field_227826_s_; // has overlay
+    private boolean fastFormat; // has overlay
 
     @Shadow
-    private boolean field_227827_t_; // is baked quad format
+    private boolean fullFormat; // is baked quad format
 
     @Shadow
-    protected abstract void grow(int size);
+    protected abstract void growBuffer(int increaseAmount);
 
     @Override
     public void vertexParticle(float x, float y, float z, float u, float v, int color, int light) {
-        if (this.format != DefaultVertexFormats.POSITION_TEXTURE_COLOR_LIGHT) {
+        if (this.vertexFormat != DefaultVertexFormats.POSITION_COLOR_TEX_LIGHTMAP) {
             this.vertexParticleFallback(x, y, z, u, v, color, light);
             return;
         }
 
-        int size = this.format.getVertexSize();
+        int size = this.vertexFormat.getSize();
 
-        this.grow(size);
+        this.growBuffer(size);
 
         if (UnsafeUtil.isAvailable()) {
             this.vertexParticleUnsafe(x, y, z, u, v, color, light);
@@ -68,23 +68,23 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
             this.vertexParticleSafe(x, y, z, u, v, color, light);
         }
 
-        this.elementOffset += size;
+        this.nextElementBytes += size;
         this.vertexCount++;
     }
 
     private void vertexParticleFallback(float x, float y, float z, float u, float v, int color, int light) {
-        this.vertex(x, y, z);
-        this.texture(u, v);
+        this.pos(x, y, z);
+        this.tex(u, v);
         this.color(ColorABGR.unpackRed(color), ColorABGR.unpackGreen(color), ColorABGR.unpackBlue(color),
                 ColorABGR.unpackAlpha(color));
-        this.light(light);
-        this.next();
+        this.lightmap(light);
+        this.endVertex();
     }
 
     private void vertexParticleSafe(float x, float y, float z, float u, float v, int color, int light) {
-        int i = this.elementOffset;
+        int i = this.nextElementBytes;
 
-        ByteBuffer buffer = this.buffer;
+        ByteBuffer buffer = this.byteBuffer;
         buffer.putFloat(i, x);
         i += 4;
 
@@ -108,7 +108,7 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
     }
 
     private void vertexParticleUnsafe(float x, float y, float z, float u, float v, int color, int light) {
-        long i = MemoryUtil.memAddress(this.buffer, this.elementOffset);
+        long i = MemoryUtil.memAddress(this.byteBuffer, this.nextElementBytes);
 
         Unsafe unsafe = UnsafeUtil.instance();
         unsafe.putFloat(i, x);
@@ -135,18 +135,18 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
 
     @Override
     public void vertexQuad(float x, float y, float z, int color, float u, float v, int light, int overlay, int normal) {
-        if (this.colorFixed) {
+        if (this.defaultColor) {
             throw new IllegalStateException();
         }
 
-        if (!this.field_227827_t_) {
+        if (!this.fullFormat) {
             this.vertexQuadFallback(x, y, z, color, u, v, overlay, light, normal);
             return;
         }
 
-        int size = this.format.getVertexSize();
+        int size = this.vertexFormat.getSize();
 
-        this.grow(size);
+        this.growBuffer(size);
 
         if (UnsafeUtil.isAvailable()) {
             this.vertexQuadUnsafe(x, y, z, color, u, v, overlay, light, normal);
@@ -154,28 +154,28 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
             this.vertexQuadSafe(x, y, z, color, u, v, overlay, light, normal);
         }
 
-        this.elementOffset += size;
+        this.nextElementBytes += size;
         this.vertexCount++;
     }
 
     private void vertexQuadFallback(float x, float y, float z, int color, float u, float v, int overlay, int light, int normal) {
-        this.vertex(x, y, z);
+        this.pos(x, y, z);
         this.color(ColorABGR.unpackRed(color), ColorABGR.unpackGreen(color), ColorABGR.unpackBlue(color),
                 ColorABGR.unpackAlpha(color));
-        this.texture(u, v);
+        this.tex(u, v);
 
-        if (this.field_227826_s_) {
+        if (this.fastFormat) {
             this.overlay(overlay);
         }
 
-        this.light(light);
+        this.lightmap(light);
         this.normal(Norm3b.unpackX(normal), Norm3b.unpackY(normal), Norm3b.unpackZ(normal));
-        this.next();
+        this.endVertex();
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
     private void vertexQuadUnsafe(float x, float y, float z, int color, float u, float v, int overlay, int light, int normal) {
-        long i = MemoryUtil.memAddress(this.buffer, this.elementOffset);
+        long i = MemoryUtil.memAddress(this.byteBuffer, this.nextElementBytes);
 
         Unsafe unsafe = UnsafeUtil.instance();
         unsafe.putFloat(i, x);
@@ -196,7 +196,7 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
         unsafe.putFloat(i, v);
         i += 4;
 
-        if (this.field_227826_s_) {
+        if (this.fastFormat) {
             unsafe.putInt(i, overlay);
             i += 4;
         }
@@ -208,9 +208,9 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
     }
 
     private void vertexQuadSafe(float x, float y, float z, int color, float u, float v, int overlay, int light, int normal) {
-        int i = this.elementOffset;
+        int i = this.nextElementBytes;
 
-        ByteBuffer buffer = this.buffer;
+        ByteBuffer buffer = this.byteBuffer;
         buffer.putFloat(i, x);
         i += 4;
 
@@ -229,7 +229,7 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
         buffer.putFloat(i, v);
         i += 4;
 
-        if (this.field_227826_s_) {
+        if (this.fastFormat) {
             buffer.putInt(i, overlay);
             i += 4;
         }
@@ -241,20 +241,20 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
     }
 
     @Override
-    public void quad(MatrixStack.Entry matrices, BakedQuad quad, float[] brightnessTable, float r, float g, float b, int[] light, int overlay, boolean colorize) {
-        if (!this.field_227827_t_) {
-            super.quad(matrices, quad, brightnessTable, r, g, b, light, overlay, colorize);
+    public void addQuad(MatrixStack.Entry matrices, BakedQuad quad, float[] brightnessTable, float r, float g, float b, int[] light, int overlay, boolean colorize) {
+        if (!this.fullFormat) {
+            super.addQuad(matrices, quad, brightnessTable, r, g, b, light, overlay, colorize);
 
             return;
         }
 
-        if (this.colorFixed) {
+        if (this.defaultColor) {
             throw new IllegalStateException();
         }
 
         ModelQuadView quadView = (ModelQuadView) quad;
 
-        Matrix4f modelMatrix = matrices.getModel();
+        Matrix4f modelMatrix = matrices.getMatrix();
         Matrix3f normalMatrix = matrices.getNormal();
 
         int norm = MatrixUtil.computeNormal(normalMatrix, quad.getFace());
@@ -306,14 +306,14 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
         float y2 = matrixExt.transformVecY(x, y, z);
         float z2 = matrixExt.transformVecZ(x, y, z);
 
-        if (this.format != DefaultVertexFormats.POSITION_COLOR_TEXTURE_LIGHT) {
+        if (this.vertexFormat != DefaultVertexFormats.POSITION_COLOR_TEX_LIGHTMAP) {
             this.vertexGlyphFallback(x2, y2, z2, color, u, v, light);
             return;
         }
 
-        int size = this.format.getVertexSize();
+        int size = this.vertexFormat.getSize();
 
-        this.grow(size);
+        this.growBuffer(size);
 
         if (UnsafeUtil.isAvailable()) {
             this.vertexGlyphUnsafe(x2, y2, z2, color, u, v, light);
@@ -321,23 +321,23 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
             this.vertexGlyphSafe(x2, y2, z2, color, u, v, light);
         }
 
-        this.elementOffset += size;
+        this.nextElementBytes += size;
         this.vertexCount++;
     }
 
     private void vertexGlyphFallback(float x, float y, float z, int color, float u, float v, int light) {
-        this.vertex(x, y, z);
+        this.pos(x, y, z);
         this.color(ColorABGR.unpackRed(color), ColorABGR.unpackGreen(color), ColorABGR.unpackBlue(color),
                 ColorABGR.unpackAlpha(color));
-        this.texture(u, v);
-        this.light(light);
-        this.next();
+        this.tex(u, v);
+        this.lightmap(light);
+        this.endVertex();
     }
 
     private void vertexGlyphSafe(float x, float y, float z, int color, float u, float v, int light) {
-        int i = this.elementOffset;
+        int i = this.nextElementBytes;
 
-        ByteBuffer buffer = this.buffer;
+        ByteBuffer buffer = this.byteBuffer;
         buffer.putFloat(i, x);
         i += 4;
 
@@ -361,7 +361,7 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder
     }
 
     private void vertexGlyphUnsafe(float x, float y, float z, int color, float u, float v, int light) {
-        long i = MemoryUtil.memAddress(this.buffer, this.elementOffset);
+        long i = MemoryUtil.memAddress(this.byteBuffer, this.nextElementBytes);
 
         Unsafe unsafe = UnsafeUtil.instance();
         unsafe.putFloat(i, x);

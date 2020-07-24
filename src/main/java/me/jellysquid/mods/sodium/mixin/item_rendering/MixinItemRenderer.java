@@ -31,28 +31,28 @@ public class MixinItemRenderer {
 
     @Shadow
     @Final
-    private ItemColors colorMap;
+    private ItemColors itemColors;
 
     /**
      * @reason Avoid allocations
      * @author JellySquid
      */
     @Overwrite(remap=false)
-    public void renderBakedItemModel(IBakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, IVertexBuilder vertices) {
+    public void renderModel(IBakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, IVertexBuilder vertices) {
         XoRoShiRoRandom random = this.random;
 
         for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = model.getQuads(null, direction, random.setSeedAndReturn(42L));
 
             if (!quads.isEmpty()) {
-                this.renderBakedItemQuads(matrices, vertices, quads, stack, light, overlay);
+                this.renderQuads(matrices, vertices, quads, stack, light, overlay);
             }
         }
 
         List<BakedQuad> quads = model.getQuads(null, null, random.setSeedAndReturn(42L));
 
         if (!quads.isEmpty()) {
-            this.renderBakedItemQuads(matrices, vertices, quads, stack, light, overlay);
+            this.renderQuads(matrices, vertices, quads, stack, light, overlay);
         }
     }
 
@@ -61,8 +61,8 @@ public class MixinItemRenderer {
      * @author JellySquid
      */
     @Overwrite(remap=false)
-    public void renderBakedItemQuads(MatrixStack matrices, IVertexBuilder vertices, List<BakedQuad> quads, ItemStack stack, int light, int overlay) {
-        MatrixStack.Entry entry = matrices.peek();
+    public void renderQuads(MatrixStack matrices, IVertexBuilder vertices, List<BakedQuad> quads, ItemStack stack, int light, int overlay) {
+        MatrixStack.Entry entry = matrices.getLast();
 
         QuadVertexConsumer consumer = (QuadVertexConsumer) vertices;
         IItemColor colorProvider = null;
@@ -70,12 +70,12 @@ public class MixinItemRenderer {
         for (BakedQuad bakedQuad : quads) {
             int color = 0xFFFFFFFF;
 
-            if (!stack.isEmpty() && bakedQuad.hasColor()) {
+            if (!stack.isEmpty() && bakedQuad.hasTintIndex()) {
                 if (colorProvider == null) {
-                    colorProvider = ((ItemColorsExtended) this.colorMap).getColorProvider(stack);
+                    colorProvider = ((ItemColorsExtended) this.itemColors).getColorProvider(stack);
                 }
 
-                color = ColorARGB.toABGR((colorProvider.getColor(stack, bakedQuad.getColorIndex())), 255);
+                color = ColorARGB.toABGR((colorProvider.getColor(stack, bakedQuad.getTintIndex())), 255);
             }
 
             ModelQuadView quad = ((ModelQuadView) bakedQuad);

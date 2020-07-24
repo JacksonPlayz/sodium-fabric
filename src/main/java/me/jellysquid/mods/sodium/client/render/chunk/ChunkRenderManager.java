@@ -243,12 +243,12 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
     }
 
     private void init(ActiveRenderInfo camera, FrustumExtended frustum, int frame, boolean spectator) {
-        this.cameraX = camera.getPos().x;
-        this.cameraY = camera.getPos().y;
-        this.cameraZ = camera.getPos().z;
+        this.cameraX = camera.getProjectedView().x;
+        this.cameraY = camera.getProjectedView().y;
+        this.cameraZ = camera.getProjectedView().z;
 
         this.lastFrameUpdated = frame;
-        this.useOcclusionCulling = Minecraft.getInstance().chunkCullingEnabled;
+        this.useOcclusionCulling = Minecraft.getInstance().renderChunksMany;
         this.useAggressiveCulling = SodiumClientMod.options().advanced.useChunkFaceCulling;
 
         this.resetGraph();
@@ -264,7 +264,7 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
             node.resetGraphState();
             node.setVisibleFrame(frame);
 
-            if (spectator && this.world.getBlockState(origin).isOpaqueFullCube(this.world, origin)) {
+            if (spectator && this.world.getBlockState(origin).isOpaqueCube(this.world, origin)) {
                 this.useOcclusionCulling = false;
             }
 
@@ -309,7 +309,7 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
     }
 
     public ChunkRenderContainer<T> getRender(int x, int y, int z) {
-        return this.renders.get(BlockPos.asLong(x, y, z));
+        return this.renders.get(BlockPos.pack(x, y, z));
     }
 
     private void resetGraph() {
@@ -344,10 +344,10 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
 
     private void loadChunk(int x, int z) {
         for (int y = 0; y < 16; y++) {
-            ChunkRenderContainer<T> render = this.renders.computeIfAbsent(BlockPos.asLong(x, y, z), this::createChunkRender);
+            ChunkRenderContainer<T> render = this.renders.computeIfAbsent(BlockPos.pack(x, y, z), this::createChunkRender);
 
             for (Direction dir : DirectionUtil.ALL_DIRECTIONS) {
-                ChunkRenderContainer<T> adj = this.getRender(x + dir.getOffsetX(), y + dir.getOffsetY(), z + dir.getOffsetZ());
+                ChunkRenderContainer<T> adj = this.getRender(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset());
 
                 if (adj != null) {
                     render.setAdjacentRender(dir, adj);
@@ -361,7 +361,7 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
 
     private void unloadChunk(int x, int z) {
         for (int y = 0; y < 16; y++) {
-            ChunkRenderContainer<T> render = this.renders.remove(BlockPos.asLong(x, y, z));
+            ChunkRenderContainer<T> render = this.renders.remove(BlockPos.pack(x, y, z));
 
             if (render == null) {
                 continue;
@@ -383,13 +383,13 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
     }
 
     private ChunkRenderContainer<T> createChunkRender(long pos) {
-        int x = BlockPos.unpackLongX(pos);
-        int y = BlockPos.unpackLongY(pos);
-        int z = BlockPos.unpackLongZ(pos);
+        int x = BlockPos.unpackX(pos);
+        int y = BlockPos.unpackY(pos);
+        int z = BlockPos.unpackZ(pos);
 
         ChunkRenderContainer<T> render = new ChunkRenderContainer<>(this.backend, this.renderer, x, y, z);
 
-        if (ChunkSection.isEmpty(this.world.getChunk(x, z).getSectionArray()[y])) {
+        if (ChunkSection.isEmpty(this.world.getChunk(x, z).getSections()[y])) {
             render.setData(ChunkRenderData.EMPTY);
         } else {
             render.scheduleRebuild(false);
@@ -470,7 +470,7 @@ public class ChunkRenderManager<T extends ChunkGraphicsState> implements ChunkSt
         while (it.hasNext()) {
             long pos = it.nextLong();
 
-            this.loadChunk(ChunkPos.getPackedX(pos), ChunkPos.getPackedZ(pos));
+            this.loadChunk(ChunkPos.getX(pos), ChunkPos.getZ(pos));
         }
     }
 

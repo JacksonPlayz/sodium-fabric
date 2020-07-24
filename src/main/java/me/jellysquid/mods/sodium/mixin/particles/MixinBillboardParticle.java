@@ -1,8 +1,10 @@
 package me.jellysquid.mods.sodium.mixin.particles;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import me.jellysquid.mods.sodium.client.model.consumer.ParticleVertexConsumer;
 import me.jellysquid.mods.sodium.client.util.color.ColorABGR;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.TexturedParticle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
 import net.minecraft.util.math.vector.Vector3f;
@@ -14,10 +16,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(Particle.class)
+@Mixin(TexturedParticle.class)
 public abstract class MixinBillboardParticle extends Particle {
     @Shadow
-    public abstract float getSize(float tickDelta);
+    public abstract float getScale(float tickDelta);
 
     @Shadow
     protected abstract float getMinU();
@@ -40,33 +42,33 @@ public abstract class MixinBillboardParticle extends Particle {
      * @author JellySquid
      */
     @Overwrite(remap=false)
-    public void buildGeometry(IVertexConsumer vertexConsumer, ActiveRenderInfo camera, float tickDelta) {
-        Vector3d vec3d = camera.getPos();
+    public void renderParticle(IVertexBuilder vertexConsumer, ActiveRenderInfo camera, float tickDelta) {
+        Vector3d vec3d = camera.getProjectedView();
 
-        float x = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - vec3d.getX());
-        float y = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.y) - vec3d.getY());
-        float z = (float) (MathHelper.lerp(tickDelta, this.prevPosZ, this.z) - vec3d.getZ());
+        float x = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.posX) - vec3d.getX());
+        float y = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.posY) - vec3d.getY());
+        float z = (float) (MathHelper.lerp(tickDelta, this.prevPosZ, this.posZ) - vec3d.getZ());
 
         Quaternion quaternion;
 
-        if (this.angle == 0.0F) {
+        if (this.particleAngle == 0.0F) {
             quaternion = camera.getRotation();
         } else {
-            float angle = MathHelper.lerp(tickDelta, this.prevAngle, this.angle);
+            float angle = MathHelper.lerp(tickDelta, this.prevParticleAngle, this.particleAngle);
 
             quaternion = new Quaternion(camera.getRotation());
-            quaternion.hamiltonProduct(Vector3f.POSITIVE_Z.getRadialQuaternion(angle));
+            quaternion.multiply(Vector3f.XP.rotationDegrees(angle));
         }
 
-        float size = this.getSize(tickDelta);
-        int light = this.getColorMultiplier(tickDelta);
+        float size = this.getScale(tickDelta);
+        int light = this.getBrightnessForRender(tickDelta);
 
         float minU = this.getMinU();
         float maxU = this.getMaxU();
         float minV = this.getMinV();
         float maxV = this.getMaxV();
 
-        int color = ColorABGR.pack(this.colorRed, this.colorGreen, this.colorBlue, this.colorAlpha);
+        int color = ColorABGR.pack(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
 
         ParticleVertexConsumer vertices = (ParticleVertexConsumer) vertexConsumer;
 

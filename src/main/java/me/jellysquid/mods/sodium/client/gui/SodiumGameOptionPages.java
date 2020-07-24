@@ -35,7 +35,7 @@ public class SodiumGameOptionPages {
                         .setTooltip("The view distance controls how far away terrain will be rendered. Lower distances mean that less terrain will be " +
                                 "rendered, improving frame rates.")
                         .setControl(option -> new SliderControl(option, 2, 32, 1, ControlValueFormatter.quantity("Chunks")))
-                        .setBinding((options, value) -> options.viewDistance = value, options -> options.viewDistance)
+                        .setBinding((options, value) -> options.renderDistanceChunks = value, options -> options.renderDistanceChunks)
                         .setImpact(OptionImpact.HIGH)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
@@ -52,10 +52,10 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> {
                             opts.quality.enableClouds = value;
 
-                            if (Minecraft.isFabulousGraphicsOrBetter()) {
-                                Framebuffer framebuffer = Minecraft.getInstance().worldRenderer.getCloudsFramebuffer();
+                            if (Minecraft.func_238218_y_()) {
+                                Framebuffer framebuffer = Minecraft.getInstance().worldRenderer.func_239232_u_();
                                 if (framebuffer != null) {
-                                    framebuffer.clear(Minecraft.IS_SYSTEM_MAC);
+                                    framebuffer.framebufferClear(Minecraft.IS_RUNNING_ON_MAC);
                                 }
                             }
                         }, (opts) -> opts.quality.enableClouds)
@@ -73,7 +73,7 @@ public class SodiumGameOptionPages {
                             opts.guiScale = value;
 
                             Minecraft client = Minecraft.getInstance();
-                            client.onResolutionChanged();
+                            client.updateWindowSize();
                         }, opts -> opts.guiScale)
                         .build())
                 .add(OptionImpl.createBuilder(boolean.class, vanillaOpts)
@@ -84,7 +84,7 @@ public class SodiumGameOptionPages {
                             opts.fullscreen = value;
 
                             Minecraft client = Minecraft.getInstance();
-                            MainWindow window = client.getWindow();
+                            MainWindow window = client.getMainWindow();
 
                             if (window != null && window.isFullscreen() != opts.fullscreen) {
                                 window.toggleFullscreen();
@@ -109,9 +109,9 @@ public class SodiumGameOptionPages {
                                 "display's refresh rate.")
                         .setControl(option -> new SliderControl(option, 5, 260, 5, ControlValueFormatter.fpsLimit()))
                         .setBinding((opts, value) -> {
-                            opts.maxFps = value;
-                            Minecraft.getInstance().getWindow().setFramerateLimit(value);
-                        }, opts -> opts.maxFps)
+                            opts.framerateLimit = value;
+                            Minecraft.getInstance().getMainWindow().setFramerateLimit(value);
+                        }, opts -> opts.framerateLimit)
                         .build())
                 .build());
 
@@ -143,8 +143,8 @@ public class SodiumGameOptionPages {
                                 "\"Default\", they will use this setting.")
                         .setControl(option -> new CyclingControl<>(option, GraphicsFanciness.class, new String[] { "Fast", "Fancy", "Fabulous" }))
                         .setBinding(
-                                (opts, value) -> opts.graphicsMode = value,
-                                opts -> opts.graphicsMode)
+                                (opts, value) -> opts.field_238330_f_ = value,
+                                opts -> opts.field_238330_f_)
                         .setImpact(OptionImpact.HIGH)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
@@ -197,7 +197,7 @@ public class SodiumGameOptionPages {
                         .setTooltip("Controls how far away entities can render from the player. Higher values increase the render distance at the expense " +
                                 "of frame rates.")
                         .setControl(option -> new SliderControl(option, 50, 500, 25, ControlValueFormatter.percentage()))
-                        .setBinding((opts, value) -> opts.entityDistanceScaling = Math.round(value / 100.0F), opts -> Math.round(opts.entityDistanceScaling * 100.0F))
+                        .setBinding((opts, value) -> opts.field_238329_c_ = Math.round(value / 100.0F), opts -> Math.round(opts.field_238329_c_ * 100.0F))
                         .setImpact(OptionImpact.MEDIUM)
                         .build()
                 )

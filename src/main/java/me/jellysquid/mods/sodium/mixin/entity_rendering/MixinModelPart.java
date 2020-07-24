@@ -1,5 +1,6 @@
 package me.jellysquid.mods.sodium.mixin.entity_rendering;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import me.jellysquid.mods.sodium.client.model.ModelCuboidAccessor;
 import me.jellysquid.mods.sodium.client.model.consumer.QuadVertexConsumer;
@@ -23,31 +24,31 @@ public class MixinModelPart {
 
     @Shadow
     @Final
-    private ObjectList<ModelRenderer.ModelBox> cuboids;
+    private ObjectList<ModelRenderer.ModelBox> cubeList;
 
     /**
      * @author JellySquid
      * @reason Use optimized vertex writer, avoid allocations, use quick matrix transformations
      */
     @Overwrite(remap=false)
-    private void renderCuboids(MatrixStack.Entry matrices, IVertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
+    private void doRender(MatrixStack.Entry matrices, IVertexBuilder vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
         Matrix3fExtended normalExt = MatrixUtil.getExtendedMatrix(matrices.getNormal());
-        Matrix4fExtended modelExt = MatrixUtil.getExtendedMatrix(matrices.getModel());
+        Matrix4fExtended modelExt = MatrixUtil.getExtendedMatrix(matrices.getMatrix());
 
         QuadVertexConsumer quadConsumer = (QuadVertexConsumer) vertexConsumer;
 
         int color = ColorABGR.pack(red, green, blue, alpha);
 
-        for (ModelRenderer.ModelBox cuboid : this.cuboids) {
+        for (ModelRenderer.ModelBox cuboid : this.cubeList) {
             for (ModelRenderer.TexturedQuad quad : ((ModelCuboidAccessor) cuboid).getQuads()) {
-                float normX = normalExt.transformVecX(quad.direction);
-                float normY = normalExt.transformVecY(quad.direction);
-                float normZ = normalExt.transformVecZ(quad.direction);
+                float normX = normalExt.transformVecX(quad.normal);
+                float normY = normalExt.transformVecY(quad.normal);
+                float normZ = normalExt.transformVecZ(quad.normal);
 
                 int norm = Norm3b.pack(normX, normY, normZ);
 
-                for (ModelRenderer.PositionTextureVertex vertex : quad.vertices) {
-                    Vector3f pos = vertex.pos;
+                for (ModelRenderer.PositionTextureVertex vertex : quad.vertexPositions) {
+                    Vector3f pos = vertex.position;
 
                     float x1 = pos.getX() * NORM;
                     float y1 = pos.getY() * NORM;
@@ -57,7 +58,7 @@ public class MixinModelPart {
                     float y2 = modelExt.transformVecY(x1, y1, z1);
                     float z2 = modelExt.transformVecZ(x1, y1, z1);
 
-                    quadConsumer.vertexQuad(x2, y2, z2, color, vertex.u, vertex.v, light, overlay, norm);
+                    quadConsumer.vertexQuad(x2, y2, z2, color, vertex.textureU, vertex.textureV, light, overlay, norm);
                 }
             }
         }

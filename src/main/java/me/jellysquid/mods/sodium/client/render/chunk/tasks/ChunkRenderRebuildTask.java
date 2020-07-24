@@ -83,10 +83,10 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                         continue;
                     }
 
-                    pos.set(x, y, z);
+                    pos.setPos(x, y, z);
 
                     if (block.getRenderType(blockState) == BlockRenderType.MODEL) {
-                        RenderType layer = RenderTypeLookup.getBlockLayer(blockState);
+                        RenderType layer = RenderTypeLookup.getChunkRenderType(blockState);
 
                         ChunkBuildBuffers.ChunkBuildBufferDelegate builder = buffers.get(layer);
                         builder.setOffset(x - offset.getX(), y - offset.getY(), z - offset.getZ());
@@ -99,7 +99,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                     FluidState fluidState = block.getFluidState(blockState);
 
                     if (!fluidState.isEmpty()) {
-                        RenderType layer = RenderTypeLookup.getFluidLayer(fluidState);
+                        RenderType layer = RenderTypeLookup.getRenderType(fluidState);
 
                         ChunkBuildBuffers.ChunkBuildBufferDelegate builder = buffers.get(layer);
                         builder.setOffset(x - offset.getX(), y - offset.getY(), z - offset.getZ());
@@ -109,22 +109,22 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
                         }
                     }
 
-                    if (block.hasBlockEntity()) {
-                        TileEntity entity = this.slice.getBlockEntity(pos, Chunk.CreateEntityType.CHECK);
+                    if (block.hasTileEntity(blockState)) {
+                        TileEntity entity = this.slice.getTileEntity(pos, Chunk.CreateEntityType.CHECK);
 
                         if (entity != null) {
-                            TileEntityRenderer<TileEntity> renderer = TileEntityRendererDispatcher.INSTANCE.get(entity);
+                            TileEntityRenderer<TileEntity> renderer = TileEntityRendererDispatcher.instance.getRenderer(entity);
 
                             if (renderer != null) {
-                                renderData.addBlockEntity(entity, !renderer.rendersOutsideBoundingBox(entity));
+                                renderData.addBlockEntity(entity, !renderer.isGlobalRenderer(entity));
 
                                 bounds.addBlock(x, y, z);
                             }
                         }
                     }
 
-                    if (blockState.isOpaqueFullCube(this.slice, pos)) {
-                        occluder.markClosed(pos);
+                    if (blockState.isOpaqueCube(this.slice, pos)) {
+                        occluder.setOpaqueCube(pos);
                     }
                 }
             }
@@ -138,7 +138,7 @@ public class ChunkRenderRebuildTask<T extends ChunkGraphicsState> extends ChunkR
             }
         }
 
-        renderData.setOcclusionData(occluder.build());
+        renderData.setOcclusionData(occluder.computeVisibility());
         renderData.setBounds(bounds.build(this.render.getChunkPos()));
 
         return new ChunkBuildResult<>(this.render, renderData.build());

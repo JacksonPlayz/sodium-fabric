@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WorldRenderer.class)
 public class MixinWorldRenderer {
-    @Inject(method = "render", at = @At("HEAD"))
+    @Inject(method = "updateCameraAndRender", at = @At("HEAD"))
     private void reset(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, ActiveRenderInfo camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
         GlobalRenderContext.reset();
     }

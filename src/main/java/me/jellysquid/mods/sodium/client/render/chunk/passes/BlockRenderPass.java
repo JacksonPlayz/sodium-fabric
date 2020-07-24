@@ -8,7 +8,7 @@ public enum BlockRenderPass {
     CUTOUT(RenderType.getCutout(), false),
     CUTOUT_MIPPED(RenderType.getCutoutMipped(), false),
     TRANSLUCENT(RenderType.getTranslucent(), true),
-    TRIPWIRE(RenderType.getTripwire(), false);
+    TRIPWIRE(RenderType.func_241715_r_(), false);
 
     public static final BlockRenderPass[] VALUES = BlockRenderPass.values();
     public static final int COUNT = VALUES.length;
@@ -26,10 +26,10 @@ public enum BlockRenderPass {
     }
 
     public void endDrawing() {
-        this.layer.endDrawing();
+        this.layer.clearRenderState();
     }
 
     public void startDrawing() {
-        this.layer.startDrawing();
+        this.layer.setupRenderState();
     }
 }

@@ -26,7 +26,7 @@ public class MixinBakedQuad implements ModelQuadView {
 
     @Shadow
     @Final
-    protected int colorIndex;
+    protected int tintIndex;
     private int cachedFlags;
 
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -86,6 +86,6 @@ public class MixinBakedQuad implements ModelQuadView {
 
     @Override
     public int getColorIndex() {
-        return this.colorIndex;
+        return this.tintIndex;
     }
 }

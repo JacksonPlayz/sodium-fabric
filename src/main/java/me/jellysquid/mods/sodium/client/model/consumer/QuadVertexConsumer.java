@@ -21,7 +21,7 @@ public interface QuadVertexConsumer {
     void vertexQuad(float x, float y, float z, int color, float u, float v, int light, int overlay, int normal);
 
     default void vertexQuad(MatrixStack.Entry entry, float x, float y, float z, int color, float u, float v, int light, int overlay, int normal) {
-        Matrix4fExtended modelMatrix = MatrixUtil.getExtendedMatrix(entry.getModel());
+        Matrix4fExtended modelMatrix = MatrixUtil.getExtendedMatrix(entry.getMatrix());
 
         float x2 = modelMatrix.transformVecX(x, y, z);
         float y2 = modelMatrix.transformVecY(x, y, z);

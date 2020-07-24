@@ -51,7 +51,7 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
     }
 
     @Override
-    public void unload(int x, int z) {
+    public void unloadChunk(int x, int z) {
         // If this request unloads a chunk, notify the listener
         if (this.chunks.remove(createChunkKey(x, z)) != null) {
             this.onChunkUnloaded(x, z);
@@ -92,14 +92,14 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
     }
 
     @Override
-    public Chunk loadChunkFromPacket(int x, int z, BiomeContainer biomes, PacketBuffer buf, CompoundNBT tag, int verticalStripBitmask, boolean complete) {
+    public Chunk loadChunk(int x, int z, BiomeContainer biomes, PacketBuffer buf, CompoundNBT tag, int verticalStripBitmask, boolean complete) {
         long key = createChunkKey(x, z);
 
         Chunk chunk = this.chunks.get(key);
 
         // If the chunk does not yet exist, create it now
         if (!complete && chunk != null) {
-            chunk.loadFromPacket(biomes, buf, tag, verticalStripBitmask);
+            chunk.read(biomes, buf, tag, verticalStripBitmask);
         } else {
             // [VanillaCopy] If the packet didn't contain any biome data and the chunk doesn't exist yet, abort
             if (biomes == null) {
@@ -107,7 +107,7 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
             }
 
             chunk = new Chunk(this.world, new ChunkPos(x, z), biomes);
-            chunk.loadFromPacket(biomes, buf, tag, verticalStripBitmask);
+            chunk.read(biomes, buf, tag, verticalStripBitmask);
 
             long stamp = this.lock.writeLock();
 
@@ -125,13 +125,13 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
     }
 
     @Override
-    public void setChunkMapCenter(int x, int z) {
+    public void setCenter(int x, int z) {
         this.centerX = x;
         this.centerZ = z;
     }
 
     @Override
-    public void updateLoadDistance(int loadDistance) {
+    public void setViewDistance(int loadDistance) {
         this.radius = getChunkMapRadius(loadDistance);
 
         FixedLongHashTable<Chunk> copy = new FixedLongHashTable<>(getChunkMapSize(this.radius), Hash.FAST_LOAD_FACTOR);
@@ -145,8 +145,8 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
                 Long2ObjectMap.Entry<Chunk> entry = it.next();
 
                 long pos = entry.getLongKey();
-                int x = ChunkPos.getPackedX(pos);
-                int z = ChunkPos.getPackedZ(pos);
+                int x = ChunkPos.getX(pos);
+                int z = ChunkPos.getZ(pos);
 
                 // Remove any chunks which are outside the load radius
                 if (Math.abs(x - this.centerX) <= this.radius && Math.abs(z - this.centerZ) <= this.radius) {
@@ -161,12 +161,12 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
     }
 
     @Override
-    public String getDebugString() {
-        return "SodiumChunkCache: " + this.getLoadedChunkCount();
+    public String makeString() {
+        return "SodiumChunkCache: " + this.getLoadedChunksCount();
     }
 
     @Override
-    public int getLoadedChunkCount() {
+    public int getLoadedChunksCount() {
         return this.chunks.size();
     }
 
@@ -177,18 +177,18 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
 
     private void onChunkLoaded(int x, int z, Chunk chunk) {
         // [VanillaCopy] Mark the chunk as eligible for block and sky lighting
-        WorldLightManager lightEngine = this.getLightingProvider();
-        lightEngine.setLightEnabled(new ChunkPos(x, z), true);
+        WorldLightManager lightEngine = this.getLightManager();
+        lightEngine.enableLightSources(new ChunkPos(x, z), true);
 
-        ChunkSection[] sections = chunk.getSectionArray();
+        ChunkSection[] sections = chunk.getSections();
 
         // [VanillaCopy] Notify the light engine that this chunk's sections have been updated
         for (int y = 0; y < sections.length; ++y) {
-            lightEngine.updateSectionStatus(SectionPos.from(x, y, z), ChunkSection.isEmpty(sections[y]));
+            lightEngine.updateSectionStatus(SectionPos.of(x, y, z), ChunkSection.isEmpty(sections[y]));
         }
 
         // Sodium doesn't actually use vanilla's global color cache, but we keep it around for compatibility purposes
-        this.world.resetChunkColor(x, z);
+//        this.world.clearColorCaches(x, z);
 
         // Notify the chunk listener
         if (this.listener != null) {
@@ -204,7 +204,7 @@ public class SodiumChunkManager extends ClientChunkProvider implements ChunkStat
     }
 
     private static long createChunkKey(int x, int z) {
-        return ChunkPos.toLong(x, z);
+        return ChunkPos.asLong(x, z);
     }
 
     private static int getChunkMapRadius(int radius) {

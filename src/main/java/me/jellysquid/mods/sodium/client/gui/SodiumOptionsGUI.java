@@ -98,7 +98,7 @@ public class SodiumOptionsGUI extends Screen {
         int y = 6;
 
         for (OptionPage page : this.pages) {
-            int width = 10 + this.textRenderer.getWidth(page.getName());
+            int width = 10 + this.font.getStringWidth(page.getName());
 
             FlatButtonWidget button = new FlatButtonWidget(new Dim2i(x, y, width, 16), page.getName(), () -> this.setPage(page));
             button.setSelected(this.currentPage == page);
@@ -192,7 +192,7 @@ public class SodiumOptionsGUI extends Screen {
         int boxX = dim.getLimitX() + boxPadding;
 
         Option<?> option = element.getOption();
-        List<ITextProperties> tooltip = this.textRenderer.wrapLines(option.getTooltip(), boxWidth - (textPadding * 2));
+        List<ITextProperties> tooltip = this.font.func_238425_b_(option.getTooltip(), boxWidth - (textPadding * 2));
 
         OptionImpact impact = option.getImpact();
 
@@ -218,7 +218,7 @@ public class SodiumOptionsGUI extends Screen {
                 continue;
             }
 
-            this.textRenderer.draw(matrixStack, str, boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF);
+            this.font.drawString(matrixStack, str.getString(), boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF);
         }
     }
 
@@ -240,12 +240,12 @@ public class SodiumOptionsGUI extends Screen {
         Minecraft client = Minecraft.getInstance();
 
         if (flags.contains(OptionFlag.REQUIRES_RENDERER_RELOAD)) {
-            client.worldRenderer.reload();
+            client.worldRenderer.loadRenderers();
         }
 
         if (flags.contains(OptionFlag.REQUIRES_ASSET_RELOAD)) {
-            client.resetMipmapLevels(client.options.mipmapLevels);
-            client.reloadResourcesConcurrently();
+            client.setMipmapLevels(client.gameSettings.mipmapLevels);
+            client.reloadResources();
         }
 
         for (OptionStorage<?> storage : dirtyStorages) {
@@ -259,23 +259,12 @@ public class SodiumOptionsGUI extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
-            Minecraft.getInstance().openScreen(new VideoSettingsScreen(this.prevScreen, Minecraft.getInstance().options));
-
-            return true;
-        }
-
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    @Override
     public boolean shouldCloseOnEsc() {
         return !this.hasPendingChanges;
     }
 
     @Override
     public void onClose() {
-        this.client.openScreen(this.prevScreen);
+        this.minecraft.displayGuiScreen(this.prevScreen);
     }
 }

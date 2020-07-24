@@ -34,7 +34,7 @@ public class ModelQuadUtil {
 
     static {
         for (int i = 0; i < NORMALS.length; i++) {
-            NORMALS[i] = Norm3b.pack(DirectionUtil.ALL_DIRECTIONS[i].getVector());
+            NORMALS[i] = Norm3b.pack(DirectionUtil.ALL_DIRECTIONS[i].getDirectionVec());
         }
     }
 

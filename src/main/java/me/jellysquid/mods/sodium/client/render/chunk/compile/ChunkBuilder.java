@@ -217,7 +217,7 @@ public class ChunkBuilder<T extends ChunkGraphicsState> {
 
         this.world = world;
         this.renderPassManager = renderPassManager;
-        this.biomeCacheManager = new BiomeCacheManager(world.getDimension().getBiomeAccessType(), ((ClientWorldExtended) world).getBiomeSeed());
+        this.biomeCacheManager = new BiomeCacheManager(world.func_230315_m_().getMagnifier(), ((ClientWorldExtended) world).getBiomeSeed());
 
         this.startWorkers();
     }

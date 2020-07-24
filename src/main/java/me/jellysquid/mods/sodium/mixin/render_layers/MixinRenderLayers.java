@@ -17,15 +17,15 @@ public class MixinRenderLayers {
     @Mutable
     @Shadow
     @Final
-    private static Map<Block, RenderType> BLOCKS;
+    private static Map<Block, RenderType> TYPES_BY_BLOCK;
 
     @Mutable
     @Shadow
     @Final
-    private static Map<Fluid, RenderType> FLUIDS;
+    private static Map<Fluid, RenderType> TYPES_BY_FLUID;
 
     static {
-        BLOCKS = new Reference2ReferenceOpenHashMap<>(BLOCKS);
-        FLUIDS = new Reference2ReferenceOpenHashMap<>(FLUIDS);
+        TYPES_BY_BLOCK = new Reference2ReferenceOpenHashMap<>(TYPES_BY_BLOCK);
+        TYPES_BY_FLUID = new Reference2ReferenceOpenHashMap<>(TYPES_BY_FLUID);
     }
 }

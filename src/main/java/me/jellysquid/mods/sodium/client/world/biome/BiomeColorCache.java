@@ -22,7 +22,7 @@ public class BiomeColorCache {
     public BiomeColorCache(ColorResolver resolver, WorldSlice slice) {
         this.resolver = resolver;
         this.slice = slice;
-        this.radius = Minecraft.getInstance().options.biomeBlendRadius;
+        this.radius = Minecraft.getInstance().gameSettings.biomeBlendRadius;
 
         this.minX = slice.getBlockOffsetX() - this.radius - 2;
         this.minZ = slice.getBlockOffsetZ() - this.radius - 2;

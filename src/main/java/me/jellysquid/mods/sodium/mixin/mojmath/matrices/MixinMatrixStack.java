@@ -26,7 +26,7 @@ public class MixinMatrixStack {
     public void translate(double x, double y, double z) {
         MatrixStack.Entry entry = this.stack.getLast();
 
-        Matrix4fExtended mat = MatrixUtil.getExtendedMatrix(entry.getModel());
+        Matrix4fExtended mat = MatrixUtil.getExtendedMatrix(entry.getMatrix());
         mat.translate((float) x, (float) y, (float) z);
     }
 
@@ -34,11 +34,11 @@ public class MixinMatrixStack {
      * @reason Use specialized function
      * @author JellySquid
      */
-    @Overwrite
-    public void multiply(Quaternion q) {
+    @Overwrite(remap = false)
+    public void rotate(Quaternion q) {
         MatrixStack.Entry entry = this.stack.getLast();
 
-        Matrix4fExtended mat4 = MatrixUtil.getExtendedMatrix(entry.getModel());
+        Matrix4fExtended mat4 = MatrixUtil.getExtendedMatrix(entry.getMatrix());
         mat4.rotate(q);
 
         Matrix3fExtended mat3 = MatrixUtil.getExtendedMatrix(entry.getNormal());

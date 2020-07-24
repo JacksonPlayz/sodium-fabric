@@ -1,6 +1,7 @@
 package me.jellysquid.mods.sodium.client.gui.widgets;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mojang.blaze3d.vertex.IVertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
@@ -19,11 +20,11 @@ public abstract class AbstractWidget implements IRenderable, IGuiEventListener {
     protected final FontRenderer font;
 
     protected AbstractWidget() {
-        this.font = Minecraft.getInstance().textRenderer;
+        this.font = Minecraft.getInstance().fontRenderer;
     }
 
     protected void drawString(MatrixStack matrixStack, String str, int x, int y, int color) {
-        this.font.draw(matrixStack, str, x, y, color);
+        this.font.drawString(matrixStack, str, x, y, color);
     }
 
     protected void drawRect(int x1, int y1, int x2, int y2, int color) {
@@ -45,26 +46,26 @@ public abstract class AbstractWidget implements IRenderable, IGuiEventListener {
 
         consumer.accept(bufferBuilder);
 
-        bufferBuilder.end();
+        bufferBuilder.finishDrawing();
 
         WorldVertexBufferUploader.draw(bufferBuilder);
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
-    protected static void addQuad(IVertexConsumer consumer, int x1, int y1, int x2, int y2, float a, float r, float g, float b) {
-        consumer.vertex(x2, y1, 0.0D).color(r, g, b, a).next();
-        consumer.vertex(x1, y1, 0.0D).color(r, g, b, a).next();
-        consumer.vertex(x1, y2, 0.0D).color(r, g, b, a).next();
-        consumer.vertex(x2, y2, 0.0D).color(r, g, b, a).next();
+    protected static void addQuad(IVertexBuilder consumer, int x1, int y1, int x2, int y2, float a, float r, float g, float b) {
+        consumer.pos(x2, y1, 0.0D).color(r, g, b, a).endVertex();
+        consumer.pos(x1, y1, 0.0D).color(r, g, b, a).endVertex();
+        consumer.pos(x1, y2, 0.0D).color(r, g, b, a).endVertex();
+        consumer.pos(x2, y2, 0.0D).color(r, g, b, a).endVertex();
     }
 
     protected void playClickSound() {
-        Minecraft.getInstance().getSoundManager()
-                .play(SimpleSound.master(SoundEvents.field_187909_gi, 1.0F));
+        Minecraft.getInstance().getSoundHandler()
+                .play(SimpleSound.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     protected int getStringWidth(String text) {
-        return this.font.getWidth(text);
+        return this.font.getStringWidth(text);
     }
 }

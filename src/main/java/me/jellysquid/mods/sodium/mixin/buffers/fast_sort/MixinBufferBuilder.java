@@ -16,32 +16,32 @@ import java.util.BitSet;
 @Mixin(BufferBuilder.class)
 public class MixinBufferBuilder {
     @Shadow
-    private ByteBuffer buffer;
+    private ByteBuffer byteBuffer;
 
     @Shadow
     private int vertexCount;
 
     @Shadow
-    private VertexFormat format;
+    private VertexFormat vertexFormat;
 
     @Shadow
-    private int buildStart;
+    private int renderedBytes;
 
     /**
      * @reason Reduce allocations, use stack allocations, avoid unnecessary math and pointer bumping, inline comparators
      * @author JellySquid
      */
-    @Overwrite
-    public void sortQuads(float cameraX, float cameraY, float cameraZ) {
-        this.buffer.clear();
-        FloatBuffer floatBuffer = this.buffer.asFloatBuffer();
+    @Overwrite(remap = false)
+    public void sortVertexData(float cameraX, float cameraY, float cameraZ) {
+        this.byteBuffer.clear();
+        FloatBuffer floatBuffer = this.byteBuffer.asFloatBuffer();
 
-        int vertexStride = this.format.getVertexSize();
-        int quadStride = this.format.getVertexSizeInteger() * 4;
+        int vertexStride = this.vertexFormat.getSize();
+        int quadStride = this.vertexFormat.getIntegerSize() * 4;
 
-        int quadStart = this.buildStart / 4;
+        int quadStart = this.renderedBytes / 4;
         int quadCount = this.vertexCount / 4;
-        int vertexSizeInteger = this.format.getVertexSizeInteger();
+        int vertexSizeInteger = this.vertexFormat.getIntegerSize();
 
         float[] distanceArray = new float[quadCount];
         int[] indicesArray = new int[quadCount];

@@ -17,25 +17,25 @@ import java.nio.ByteBuffer;
 @Mixin(BufferBuilder.class)
 public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder implements ModelQuadSink {
     @Shadow
-    private VertexFormat format;
+    private VertexFormat vertexFormat;
 
     @Shadow
-    private int currentElementId;
+    private int vertexFormatIndex;
 
     @Shadow
-    private int elementOffset;
+    private int nextElementBytes;
 
     @Shadow
-    private VertexFormatElement currentElement;
+    private VertexFormatElement vertexFormatElement;
 
     @Shadow
-    private ByteBuffer buffer;
+    private ByteBuffer byteBuffer;
 
     @Shadow
-    protected abstract void grow(int size);
+    protected abstract void growBuffer(int increaseAmount);
 
     @Shadow
-    public abstract void vertex(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ);
+    public abstract void addVertex(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float normalX, float normalY, float normalZ);
 
     @Shadow
     private int vertexCount;
@@ -44,33 +44,33 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder imple
      * @author JellySquid
      * @reason Remove modulo operations and recursion
      */
-    @Overwrite
-    public void nextElement() {
-        ImmutableList<VertexFormatElement> elements = this.format.getElements();
+    @Overwrite(remap = false)
+    public void nextVertexFormatIndex() {
+        ImmutableList<VertexFormatElement> elements = this.vertexFormat.getElements();
 
         do {
-            this.elementOffset += this.currentElement.getSize();
+            this.nextElementBytes += this.vertexFormatElement.getSize();
 
             // Wrap around the element pointer without using modulo
-            if (++this.currentElementId >= elements.size()) {
-                this.currentElementId -= elements.size();
+            if (++this.vertexFormatIndex >= elements.size()) {
+                this.vertexFormatIndex -= elements.size();
             }
 
-            this.currentElement = elements.get(this.currentElementId);
-        } while (this.currentElement.getType() == VertexFormatElement.Usage.PADDING);
+            this.vertexFormatElement = elements.get(this.vertexFormatIndex);
+        } while (this.vertexFormatElement.getUsage() == VertexFormatElement.Usage.PADDING);
 
-        if (this.colorFixed && this.currentElement.getType() == VertexFormatElement.Usage.COLOR) {
-            this.color(this.fixedRed, this.fixedGreen, this.fixedBlue, this.fixedAlpha);
+        if (this.defaultColor && this.vertexFormatElement.getUsage() == VertexFormatElement.Usage.COLOR) {
+            this.color(this.defaultRed, this.defaultGreen, this.defaultBlue, this.defaultAlpha);
         }
     }
 
     @Override
     public void write(ModelQuadViewMutable quad) {
-        this.grow(ModelQuadUtil.VERTEX_SIZE_BYTES);
+        this.growBuffer(ModelQuadUtil.VERTEX_SIZE_BYTES);
 
-        quad.copyInto(this.buffer, this.elementOffset);
+        quad.copyInto(this.byteBuffer, this.nextElementBytes);
 
-        this.elementOffset += ModelQuadUtil.VERTEX_SIZE_BYTES;
+        this.nextElementBytes += ModelQuadUtil.VERTEX_SIZE_BYTES;
         this.vertexCount += 4;
     }
 }

@@ -52,7 +52,7 @@ public class ChunkRenderData {
      * @return True if this chunk can cull the neighbor given the incoming direction
      */
     public boolean isVisibleThrough(Direction from, Direction to) {
-        return this.occlusionData != null && this.occlusionData.isVisibleThrough(from, to);
+        return this.occlusionData != null && this.occlusionData.isVisible(from, to);
     }
 
     public List<TextureAtlasSprite> getAnimatedSprites() {
@@ -119,7 +119,7 @@ public class ChunkRenderData {
          * @param sprite The sprite
          */
         public void addSprite(TextureAtlasSprite sprite) {
-            if (sprite.isAnimated()) {
+            if (sprite.hasAnimationMetadata()) {
                 this.animatedSprites.add(sprite);
             }
         }
@@ -167,7 +167,7 @@ public class ChunkRenderData {
 
     private static ChunkRenderData createEmptyData() {
         SetVisibility occlusionData = new SetVisibility();
-        occlusionData.addOpenEdgeFaces(EnumSet.allOf(Direction.class));
+        occlusionData.setManyVisible(EnumSet.allOf(Direction.class));
 
         ChunkRenderData.Builder meshInfo = new ChunkRenderData.Builder();
         meshInfo.setOcclusionData(occlusionData);

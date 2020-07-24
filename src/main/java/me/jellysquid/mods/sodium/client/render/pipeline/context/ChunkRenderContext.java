@@ -33,12 +33,12 @@ public class ChunkRenderContext {
         this.blockRenderer = new BlockRenderer(client, lightPipelineProvider, biomeColorBlender);
         this.fluidRenderer = new FluidRenderer(client, lightPipelineProvider, biomeColorBlender);
 
-        this.models = client.getBakedModelManager().getBlockModels();
+        this.models = client.getModelManager().getBlockModelShapes();
     }
 
     public boolean renderBlock(IBlockDisplayReader world, BlockState state, BlockPos pos, ModelQuadSinkDelegate consumer, boolean cull) {
         IBakedModel model = this.models.getModel(state);
-        long seed = state.getRenderingSeed(pos);
+        long seed = state.getPositionRandom(pos);
 
         return this.blockRenderer.renderModel(world, state, pos, model, consumer, cull, seed);
     }

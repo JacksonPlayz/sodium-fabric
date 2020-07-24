@@ -1,7 +1,7 @@
 modLoader="javafml"
 loaderVersion="[31,)"
-authors="JellySquid, Jackson"
-credits="JellySquid for creating Sodium."
+authors="JellySquid"
+credits="Ported by Jackson"
 
 [[mods]]
     modId="sodium"
@@ -9,14 +9,14 @@ credits="JellySquid for creating Sodium."
     displayName="Sodium (Forge)"
     description='''Sodium is an free and open-source optimization mod for Minecraft which improves frame rates and reduces lag spikes.'''
 
-[[dependencies.nether_extension]]
+[[dependencies.sodium]]
     modId="forge"
     mandatory=true
     versionRange="[32.0.75,)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.nether_extension]]
+[[dependencies.sodium]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.16.1,)"

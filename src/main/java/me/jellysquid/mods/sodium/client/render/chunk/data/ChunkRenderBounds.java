@@ -19,13 +19,13 @@ public class ChunkRenderBounds {
     }
 
     public ChunkRenderBounds(SectionPos origin) {
-        this.x1 = origin.getMinX();
-        this.y1 = origin.getMinY();
-        this.z1 = origin.getMinZ();
+        this.x1 = origin.getWorldStartX();
+        this.y1 = origin.getWorldStartY();
+        this.z1 = origin.getWorldStartZ();
 
-        this.x2 = origin.getMaxX() + 1;
-        this.y2 = origin.getMaxY() + 1;
-        this.z2 = origin.getMaxZ() + 1;
+        this.x2 = origin.getWorldEndX() + 1;
+        this.y2 = origin.getWorldEndY() + 1;
+        this.z2 = origin.getWorldEndZ() + 1;
     }
 
     public static class Builder {
@@ -68,13 +68,13 @@ public class ChunkRenderBounds {
             }
 
             return new ChunkRenderBounds(
-                    Math.max(this.x1, origin.getMinX()) - 0.5f,
-                    Math.max(this.y1, origin.getMinY()) - 0.5f,
-                    Math.max(this.z1, origin.getMinZ()) - 0.5f,
+                    Math.max(this.x1, origin.getWorldStartX()) - 0.5f,
+                    Math.max(this.y1, origin.getWorldStartY()) - 0.5f,
+                    Math.max(this.z1, origin.getWorldStartZ()) - 0.5f,
 
-                    Math.min(this.x2 + 1, origin.getMaxX()) + 0.5f,
-                    Math.min(this.y2 + 1, origin.getMaxY()) + 0.5f,
-                    Math.min(this.z2 + 1, origin.getMaxZ()) + 0.5f
+                    Math.min(this.x2 + 1, origin.getWorldEndX()) + 0.5f,
+                    Math.min(this.y2 + 1, origin.getWorldEndY()) + 0.5f,
+                    Math.min(this.z2 + 1, origin.getWorldEndZ()) + 0.5f
             );
         }
     }

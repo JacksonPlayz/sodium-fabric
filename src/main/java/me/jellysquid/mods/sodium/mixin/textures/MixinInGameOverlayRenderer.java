@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(OverlayRenderer.class)
 public class MixinInGameOverlayRenderer {
-    @Inject(method = "renderFireOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/texture/TextureManager;bindTexture(Lnet/minecraft/util/Identifier;)V", shift = At.Shift.AFTER))
+    @Inject(method = "renderFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/texture/TextureManager;bindTexture(Lnet/minecraft/util/ResourceLocation;)V", shift = At.Shift.AFTER))
     private static void preFireOverlayRender(Minecraft client, MatrixStack stack, CallbackInfo ci) {
-        SpriteUtil.markSpriteActive(ModelBakery.FIRE_1.getSprite());
+        SpriteUtil.markSpriteActive(ModelBakery.LOCATION_FIRE_1.getSprite());
     }
 }

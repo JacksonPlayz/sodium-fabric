@@ -61,7 +61,7 @@ public class ChunkMeshBuilder implements ModelQuadSink {
         this.stride = format.getStride() * 4;
         this.encoder = SodiumVertexFormats.getEncoder(format);
 
-        this.buffer = GLAllocation.allocateByteBuffer(initialSize);
+        this.buffer = GLAllocation.createDirectByteBuffer(initialSize);
         this.capacity = initialSize;
     }
 
@@ -115,7 +115,7 @@ public class ChunkMeshBuilder implements ModelQuadSink {
         int cap = Math.max(this.capacity * 2, this.capacity + len);
 
         // Allocate a new buffer and copy the old buffer's contents into it
-        ByteBuffer buffer = GLAllocation.allocateByteBuffer(cap);
+        ByteBuffer buffer = GLAllocation.createDirectByteBuffer(cap);
         buffer.put(this.buffer);
         buffer.position(0);
 
