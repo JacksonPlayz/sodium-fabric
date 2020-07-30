@@ -39,7 +39,6 @@
     "particles.MixinBillboardParticle",
     "particles.MixinParticleManager",
     "pipeline.MixinBakedQuad",
-    "pipeline.MixinBlockModelRenderer",
     "pipeline.MixinBufferBuilder",
     "pipeline.MixinVertexConsumer",
     "pipeline.MixinWorldRenderer",
