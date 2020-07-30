@@ -34,7 +34,7 @@ public class MixinMatrixStack {
      * @reason Use specialized function
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void rotate(Quaternion q) {
         MatrixStack.Entry entry = this.stack.getLast();
 

@@ -37,7 +37,7 @@ public class MixinItemRenderer {
      * @reason Avoid allocations
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     public void renderModel(IBakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, IVertexBuilder vertices) {
         XoRoShiRoRandom random = this.random;
 
@@ -60,7 +60,7 @@ public class MixinItemRenderer {
      * @reason Use vertex building intrinsics
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     public void renderQuads(MatrixStack matrices, IVertexBuilder vertices, List<BakedQuad> quads, ItemStack stack, int light, int overlay) {
         MatrixStack.Entry entry = matrices.getLast();
 

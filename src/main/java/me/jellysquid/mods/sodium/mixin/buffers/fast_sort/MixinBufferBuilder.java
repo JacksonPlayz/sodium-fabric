@@ -31,7 +31,7 @@ public class MixinBufferBuilder {
      * @reason Reduce allocations, use stack allocations, avoid unnecessary math and pointer bumping, inline comparators
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void sortVertexData(float cameraX, float cameraY, float cameraZ) {
         this.byteBuffer.clear();
         FloatBuffer floatBuffer = this.byteBuffer.asFloatBuffer();

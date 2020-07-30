@@ -38,7 +38,7 @@ public abstract class MixinSprite implements SpriteExtended {
      * @author JellySquid
      * @reason Allow conditional texture updating
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void updateAnimation() {
         this.tickCounter++;
 

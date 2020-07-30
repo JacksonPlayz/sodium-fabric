@@ -41,7 +41,7 @@ public abstract class MixinBillboardParticle extends Particle {
      * @reason Optimize function
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     public void renderParticle(IVertexBuilder vertexConsumer, ActiveRenderInfo camera, float tickDelta) {
         Vector3d vec3d = camera.getProjectedView();
 

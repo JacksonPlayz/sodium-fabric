@@ -44,7 +44,7 @@ public abstract class MixinBufferBuilder extends DefaultColorVertexBuilder imple
      * @author JellySquid
      * @reason Remove modulo operations and recursion
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void nextVertexFormatIndex() {
         ImmutableList<VertexFormatElement> elements = this.vertexFormat.getElements();
 

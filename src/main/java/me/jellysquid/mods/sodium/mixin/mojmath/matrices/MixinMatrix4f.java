@@ -261,7 +261,7 @@ public class MixinMatrix4f implements Matrix4fExtended {
      * @author JellySquid
      */
     @OnlyIn(Dist.CLIENT)
-    @Overwrite(remap = false)
+    @Overwrite
     public void write(FloatBuffer buf) {
         if (buf.remaining() < 16) {
             throw new BufferUnderflowException();

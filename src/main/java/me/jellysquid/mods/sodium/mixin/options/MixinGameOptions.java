@@ -21,7 +21,7 @@ public class MixinGameOptions {
      * @author JellySquid
      * @reason Make the cloud render mode user-configurable
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public CloudOption getCloudOption() {
         SodiumGameOptions options = SodiumClientMod.options();
 

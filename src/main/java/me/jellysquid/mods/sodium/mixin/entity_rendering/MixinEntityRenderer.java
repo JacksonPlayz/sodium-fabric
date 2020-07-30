@@ -42,7 +42,7 @@ public abstract class MixinEntityRenderer<T extends Entity> {
      * @reason Check that the entity renderer doesn't have special lighting, and if so, use our new lighting system
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public final int getPackedLight(T entity, float tickDelta) {
         BlockPos pos = new BlockPos(entity.getLook(tickDelta));
 

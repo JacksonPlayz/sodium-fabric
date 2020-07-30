@@ -49,7 +49,7 @@ public class MixinBlockModelRenderer {
      * @reason Use optimized vertex writer intrinsics, avoid allocations
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite(remap = false)
     public void renderModel(MatrixStack.Entry entry, IVertexBuilder vertexConsumer, BlockState blockState, IBakedModel bakedModel, float red, float green, float blue, int light, int overlay, net.minecraftforge.client.model.data.IModelData modelData) {
         XoRoShiRoRandom random = this.random;
         QuadVertexConsumer quadConsumer = (QuadVertexConsumer) vertexConsumer;

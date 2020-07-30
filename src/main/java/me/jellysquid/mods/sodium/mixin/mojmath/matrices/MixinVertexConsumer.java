@@ -22,7 +22,7 @@ public interface MixinVertexConsumer {
      * @reason Avoid allocations
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     default IVertexBuilder pos(Matrix4f matrix, float x, float y, float z) {
         Matrix4fExtended ext = MatrixUtil.getExtendedMatrix(matrix);
         float x2 = ext.transformVecX(x, y, z);
@@ -36,7 +36,7 @@ public interface MixinVertexConsumer {
      * @reason Avoid allocations
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     default IVertexBuilder normal(Matrix3f matrix, float x, float y, float z) {
         Matrix3fExtended ext = MatrixUtil.getExtendedMatrix(matrix);
         float x2 = ext.transformVecX(x, y, z);

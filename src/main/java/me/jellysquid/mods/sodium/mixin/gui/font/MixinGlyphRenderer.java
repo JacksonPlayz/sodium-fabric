@@ -50,7 +50,7 @@ public class MixinGlyphRenderer {
      * @reason Use intrinsics
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     public void render(boolean italic, float x, float y, Matrix4f matrix, IVertexBuilder vertexConsumer, float red, float green, float blue, float alpha, int light) {
         float x1 = x + this.minX;
         float x2 = x + this.maxX;

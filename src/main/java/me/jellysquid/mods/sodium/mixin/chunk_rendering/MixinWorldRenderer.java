@@ -53,7 +53,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public int getRenderedChunks() {
         return this.renderer.getVisibleChunkCount();
     }
@@ -62,7 +62,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect the check to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public boolean hasNoChunkUpdates() {
         return this.renderer.isTerrainRenderComplete();
     }
@@ -76,7 +76,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect the chunk layer render passes to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap=false)
+    @Overwrite
     private void renderBlockLayer(RenderType RenderType, MatrixStack matrixStack, double d, double e, double f) {
         this.renderer.drawChunkLayer(RenderType, matrixStack, d, e, f);
     }
@@ -94,7 +94,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect chunk updates to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void markBlockRangeForRenderUpdate(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         this.renderer.scheduleRebuildForBlockArea(minX, minY, minZ, maxX, maxY, maxZ, false);
     }
@@ -103,7 +103,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect chunk updates to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void markForRerender(int x, int y, int z) {
         this.renderer.scheduleRebuildForChunks(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1, false);
     }
@@ -112,7 +112,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect chunk updates to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     private void notifyBlockUpdate(BlockPos pos, boolean important) {
         this.renderer.scheduleRebuildForBlockArea(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1, important);
     }
@@ -121,7 +121,7 @@ public abstract class MixinWorldRenderer {
      * @reason Redirect chunk updates to our renderer
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     private void markForRerender(int x, int y, int z, boolean important) {
         this.renderer.scheduleRebuildForChunk(x, y, z, important);
     }
@@ -140,7 +140,7 @@ public abstract class MixinWorldRenderer {
      * @reason Replace the debug string
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public String getDebugInfoRenders() {
         return this.renderer.getChunksDebugString();
     }

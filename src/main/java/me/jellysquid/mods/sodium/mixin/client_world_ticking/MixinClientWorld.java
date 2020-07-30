@@ -47,7 +47,7 @@ public abstract class MixinClientWorld extends World {
      * @reason Avoid allocations, branch code out, early-skip some code
      * @author JellySquid
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public void animateTick(int xCenter, int yCenter, int zCenter, int radius, Random random, boolean spawnBarrierParticles, BlockPos.Mutable pos) {
         int x = xCenter + (random.nextInt(radius) - random.nextInt(radius));
         int y = yCenter + (random.nextInt(radius) - random.nextInt(radius));
